@@ -87,6 +87,47 @@ def identify_topical_clusters(urls, sitemap_stats):
         content = response.choices[0].message.content
         clusters_data = json.loads(content)
         
+        # Ensure we have the correct structure and standardize number format
+        if 'clusters' not in clusters_data or not isinstance(clusters_data['clusters'], list):
+            logger.warning(f"Invalid response structure from OpenAI. Missing 'clusters' list.")
+            clusters_data = {'clusters': []}
+        
+        # Process each cluster to standardize the format
+        for cluster in clusters_data['clusters']:
+            # Ensure each cluster has all required fields
+            if 'title' not in cluster:
+                cluster['title'] = 'Unnamed Cluster'
+            
+            if 'count' not in cluster:
+                cluster['count'] = 0
+            
+            # Convert count to a number if it's a string
+            if isinstance(cluster['count'], str):
+                try:
+                    # Extract numbers from strings like "~120" or "approximately 50"
+                    import re
+                    number_match = re.search(r'\d+', cluster['count'])
+                    if number_match:
+                        cluster['count'] = int(number_match.group())
+                    else:
+                        cluster['count'] = 0
+                except:
+                    cluster['count'] = 0
+            
+            # Ensure examples is a list
+            if 'examples' not in cluster or not isinstance(cluster['examples'], list):
+                cluster['examples'] = []
+            
+            # Ensure description and seo_significance exist
+            if 'description' not in cluster:
+                cluster['description'] = 'No description provided'
+            
+            if 'seo_significance' not in cluster:
+                cluster['seo_significance'] = 'No SEO significance provided'
+        
+        logger.info(f"Successfully processed {len(clusters_data['clusters'])} topical clusters")
+        logger.debug(f"Processed clusters data: {json.dumps(clusters_data)}")
+        
         return clusters_data
         
     except json.JSONDecodeError as e:

@@ -50,7 +50,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="card bg-dark stat-card">
-                        <div class="stat-value">5</div>
+                        <div class="stat-value">{{ clusters.clusters|length }}</div>
                         <div class="stat-label">Topical Clusters</div>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                     <div class="card bg-dark cluster-card">
                         <div class="card-body">
                             <h3 class="cluster-title">{{ cluster.title }}</h3>
-                            <div class="badge bg-info mb-3">~{{ cluster.count }} URLs</div>
+                            <div class="badge bg-info mb-3">{{ cluster.count }} URLs</div>
                             
                             <p>{{ cluster.description }}</p>
                             
