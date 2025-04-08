@@ -24,15 +24,18 @@ def index():
 @app.route('/analyze', methods=['POST'])
 def analyze():
     """Process the sitemap URL and analyze it for topical clusters."""
-    sitemap_url = request.form.get('sitemap_url')
+    sitemap_url = request.form.get('sitemap_url', '').strip()
     
     if not sitemap_url:
         flash('Please enter a sitemap URL', 'danger')
         return redirect(url_for('index'))
     
+    logger.info(f"Analyzing sitemap URL: {sitemap_url}")
+    
     # Check if URL starts with http:// or https://
     if not sitemap_url.startswith(('http://', 'https://')):
         sitemap_url = 'https://' + sitemap_url
+        logger.info(f"Added https:// prefix, URL is now: {sitemap_url}")
     
     # Simple rate limiting
     client_ip = request.remote_addr
@@ -42,20 +45,66 @@ def analyze():
     
     try:
         # Fetch the sitemap
-        xml_content = fetch_sitemap(sitemap_url)
+        logger.info(f"Fetching sitemap from: {sitemap_url}")
+        try:
+            xml_content = fetch_sitemap(sitemap_url)
+            logger.info(f"Successfully fetched sitemap, content length: {len(xml_content)} bytes")
+        except Exception as fetch_error:
+            logger.error(f"Error fetching sitemap: {str(fetch_error)}")
+            flash(f'Error fetching sitemap: {str(fetch_error)}. Check if the URL is correct and the sitemap is accessible.', 'danger')
+            return render_template('error.html', error=str(fetch_error), sitemap_url=sitemap_url, 
+                               error_type="Fetch Error",
+                               suggestions=[
+                                   "Make sure the URL is correct and points to an actual sitemap XML file",
+                                   "Check if the site allows access to the sitemap (no robots.txt restrictions)",
+                                   "Try using a different sitemap URL format (e.g., sitemap.xml, sitemap_index.xml, post-sitemap.xml)",
+                                   "Verify the site is up and running"
+                               ])
         
         # Parse the sitemap to extract URLs
-        urls = parse_sitemap(xml_content)
+        logger.info("Parsing sitemap content")
+        try:
+            urls = parse_sitemap(xml_content)
+            logger.info(f"Parsed sitemap, found {len(urls)} URLs")
+        except Exception as parse_error:
+            logger.error(f"Error parsing sitemap: {str(parse_error)}")
+            # Save a sample of the XML content for debugging
+            xml_sample = xml_content[:500] + '...' if len(xml_content) > 500 else xml_content
+            logger.debug(f"XML content sample: {xml_sample}")
+            flash(f'Error parsing sitemap: {str(parse_error)}. The sitemap format might be non-standard.', 'danger')
+            return render_template('error.html', error=str(parse_error), sitemap_url=sitemap_url,
+                               error_type="Parse Error",
+                               xml_sample=xml_sample,
+                               suggestions=[
+                                   "The sitemap XML format appears to be non-standard or malformed",
+                                   "Try using a different sitemap URL for this site",
+                                   "If this is a WordPress site, try '/wp-sitemap.xml' or '/sitemap_index.xml'"
+                               ])
         
         if not urls:
             flash('No URLs found in the sitemap or invalid sitemap format', 'warning')
             return redirect(url_for('index'))
         
         # Get basic stats about the sitemap
+        logger.info("Analyzing sitemap structure")
         sitemap_stats = analyze_sitemap_structure(urls)
+        logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
         # Use OpenAI to identify topical clusters
-        clusters = identify_topical_clusters(urls, sitemap_stats)
+        logger.info("Identifying topical clusters with OpenAI")
+        try:
+            clusters = identify_topical_clusters(urls, sitemap_stats)
+            logger.info(f"Identified {len(clusters)} topical clusters")
+        except Exception as ai_error:
+            logger.error(f"Error with OpenAI API: {str(ai_error)}")
+            flash(f'Error identifying topical clusters: {str(ai_error)}. Check API key and try again.', 'danger')
+            return render_template('error.html', error=str(ai_error), sitemap_url=sitemap_url,
+                               error_type="AI Processing Error",
+                               suggestions=[
+                                   "Ensure your OpenAI API key is valid and has sufficient credits",
+                                   "The site content may be in a language not fully supported",
+                                   "Try again later as this could be a temporary API issue"
+                               ])
         
         # Update rate limiting counter
         request_counter[client_ip] = request_counter.get(client_ip, 0) + 1
@@ -65,12 +114,21 @@ def analyze():
         session['sitemap_stats'] = sitemap_stats
         session['clusters'] = clusters
         
+        logger.info("Analysis complete, redirecting to results page")
         return redirect(url_for('results'))
         
     except Exception as e:
-        logger.error(f"Error analyzing sitemap: {str(e)}")
+        logger.error(f"Unexpected error analyzing sitemap: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         flash(f'Error analyzing sitemap: {str(e)}', 'danger')
-        return render_template('error.html', error=str(e))
+        return render_template('error.html', error=str(e), sitemap_url=sitemap_url,
+                           error_type="Unexpected Error",
+                           suggestions=[
+                               "This may be a temporary issue with the site or our service",
+                               "Try a different sitemap URL or try again later",
+                               "If the problem persists, the sitemap format may be unsupported"
+                           ])
 
 @app.route('/results')
 def results():

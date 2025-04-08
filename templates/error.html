@@ -35,23 +35,64 @@
                 <div class="card bg-dark border-danger">
                     <div class="card-body text-center p-5">
                         <i class="fas fa-exclamation-triangle text-danger fa-5x mb-4"></i>
-                        <h2 class="card-title text-danger">Something Went Wrong</h2>
+                        <h2 class="card-title text-danger">{{ error_type|default('Something Went Wrong') }}</h2>
+                        
+                        {% if sitemap_url %}
+                        <div class="card-text mb-3">
+                            <span class="text-secondary">URL:</span> 
+                            <code class="text-info">{{ sitemap_url }}</code>
+                        </div>
+                        {% endif %}
+                        
                         <p class="card-text mb-4">{{ error }}</p>
                         
+                        {% if xml_sample %}
+                        <div class="card mb-4 bg-dark">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>XML Content Sample</span>
+                                <button class="btn btn-sm btn-secondary" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#xmlSample" 
+                                        aria-expanded="false">
+                                    Show/Hide
+                                </button>
+                            </div>
+                            <div class="collapse" id="xmlSample">
+                                <div class="card-body">
+                                    <pre class="bg-dark text-start text-wrap overflow-auto p-3"><code>{{ xml_sample }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <div class="alert alert-secondary">
-                            <h5 class="mb-3">Possible solutions:</h5>
+                            <h5 class="mb-3">Suggested Solutions:</h5>
                             <ul class="text-start">
-                                <li>Check if the sitemap URL is correct and accessible</li>
-                                <li>Ensure the sitemap is in valid XML format</li>
-                                <li>Try a different sitemap if this one continues to fail</li>
-                                <li>Check if the sitemap is too large (try a sub-sitemap)</li>
-                                <li>Verify network connectivity</li>
+                                {% if suggestions %}
+                                    {% for suggestion in suggestions %}
+                                        <li>{{ suggestion }}</li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li>Check if the sitemap URL is correct and accessible</li>
+                                    <li>Ensure the sitemap is in valid XML format</li>
+                                    <li>Try a different sitemap if this one continues to fail</li>
+                                    <li>For WordPress sites, try '/post-sitemap.xml', '/page-sitemap.xml', or '/wp-sitemap.xml'</li>
+                                    <li>Check if the sitemap is too large (try a sub-sitemap)</li>
+                                {% endif %}
                             </ul>
                         </div>
                         
-                        <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">
-                            <i class="fas fa-redo me-2"></i>Try Again
-                        </a>
+                        <div class="mt-4">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
+                                <i class="fas fa-redo me-2"></i>Try Again
+                            </a>
+                            
+                            {% if sitemap_url %}
+                            <a href="{{ sitemap_url }}" target="_blank" class="btn btn-outline-secondary">
+                                <i class="fas fa-external-link-alt me-2"></i>View Original Sitemap
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
