@@ -1,0 +1,83 @@
+/* Custom styles to complement Bootstrap */
+
+/* Loading spinner */
+.spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: 0.5rem;
+}
+
+/* Card transitions */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Cluster section */
+.cluster-card {
+    height: 100%;
+}
+
+.cluster-title {
+    color: var(--bs-info);
+    font-weight: 600;
+}
+
+.example-url {
+    word-break: break-all;
+    font-family: monospace;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--bs-dark);
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.copy-btn {
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 2rem;
+}
+
+/* Site stats */
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--bs-info);
+}
+
+/* Footer */
+.footer {
+    margin-top: 3rem;
+    padding: 1.5rem 0;
+    background-color: var(--bs-dark);
+}
+
+/* Adjust spacing */
+section {
+    padding: 2rem 0;
+}
+
+/* Help text */
+.help-text {
+    color: var(--bs-secondary);
+    font-size: 0.875rem;
+}
