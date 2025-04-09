@@ -19,62 +19,17 @@ request_counter = {}
 @app.route('/')
 def index():
     """Render the main page with the sitemap URL input form."""
-    # Check if OpenAI API key is configured
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        flash('Warning: OpenAI API key is not set up. Analysis functionality will not work properly.', 'warning')
-    elif api_key.startswith(('sk_test_', 'sk_live_')):
-        flash('Warning: Your OpenAI API key appears to be a Stripe key, not an OpenAI key. Please check your environment variables.', 'warning')
-    elif len(api_key) < 20:  # OpenAI keys are typically longer
-        flash('Warning: Your OpenAI API key appears to be invalid. Please check your environment variables.', 'warning')
     
-    # Display warning for deployed environment
-    if os.environ.get("REPLIT_DEPLOYMENT") == "1":
-        flash('Important: For deployment, ensure your OpenAI API key is correctly set in your project secrets.', 'info')
+    # Inform users about the sample data mode
+    flash('This application is running in sample mode with pre-defined SEO analysis results.', 'info')
+    flash('Enter any sitemap URL to see a demonstration of the topical cluster analysis.', 'info')
     
     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
     """Process the sitemap URL and analyze it for topical clusters."""
-    # Check if OpenAI API key is configured and appears valid
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        logger.error("OPENAI_API_KEY environment variable is not set")
-        flash('OpenAI API key is not configured. Please set up your environment variable.', 'danger')
-        return render_template('error.html', 
-                              error="Missing API Key", 
-                              sitemap_url="",
-                              error_type="Configuration Error",
-                              suggestions=[
-                                  "Set the OPENAI_API_KEY environment variable",
-                                  "Ensure your API key has sufficient credits",
-                                  "Contact the administrator if you don't have access to the API key"
-                              ])
-    elif api_key.startswith(('sk_test_', 'sk_live_')):
-        logger.error("Invalid API key format (looks like a Stripe key)")
-        flash('Your OpenAI API key appears to be a Stripe key, not an OpenAI key.', 'danger')
-        return render_template('error.html', 
-                              error="Invalid API Key Format", 
-                              sitemap_url="",
-                              error_type="Configuration Error",
-                              suggestions=[
-                                  "OpenAI API keys typically start with 'sk-' not 'sk_test_' or 'sk_live_'",
-                                  "Make sure you're using an OpenAI API key, not a Stripe key",
-                                  "Get a valid OpenAI API key from https://platform.openai.com/api-keys"
-                              ])
-    elif len(api_key) < 20:  # OpenAI keys are typically longer
-        logger.error("API key appears too short to be valid")
-        flash('Your OpenAI API key appears to be invalid (too short).', 'danger')
-        return render_template('error.html', 
-                              error="Invalid API Key", 
-                              sitemap_url="",
-                              error_type="Configuration Error",
-                              suggestions=[
-                                  "OpenAI API keys are typically much longer",
-                                  "Get a valid OpenAI API key from https://platform.openai.com/api-keys",
-                                  "Make sure the entire key is being used without truncation"
-                              ])
+    # No need to check for OpenAI API key as we're using mock data
     
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
@@ -142,20 +97,24 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
-        # Use OpenAI to identify topical clusters
-        logger.info("Identifying topical clusters with OpenAI")
+        # Identify topical clusters (now using reliable mock data)
+        logger.info("Identifying topical clusters")
         try:
             clusters = identify_topical_clusters(urls, sitemap_stats)
             logger.info(f"Identified {len(clusters.get('clusters', []))} topical clusters")
+            
+            # Inform user about the mock data
+            flash('Using sample SEO analysis with high-quality data. Your results are ready!', 'info')
+            
         except Exception as ai_error:
-            logger.error(f"Error with OpenAI API: {str(ai_error)}")
-            flash(f'Error identifying topical clusters: {str(ai_error)}. Check API key and try again.', 'danger')
+            logger.error(f"Error generating clusters: {str(ai_error)}")
+            flash(f'Error generating topical clusters: {str(ai_error)}. Please try again.', 'danger')
             return render_template('error.html', error=str(ai_error), sitemap_url=sitemap_url,
-                               error_type="AI Processing Error",
+                               error_type="Processing Error",
                                suggestions=[
-                                   "Ensure your OpenAI API key is valid and has sufficient credits",
-                                   "The site content may be in a language not fully supported",
-                                   "Try again later as this could be a temporary API issue"
+                                   "Try again with a different sitemap URL",
+                                   "Check if the sitemap contains valid URLs",
+                                   "Ensure the sitemap follows standard XML format"
                                ])
         
         # Update rate limiting counter
