@@ -9,8 +9,14 @@ from openai import OpenAI
 logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai = OpenAI(api_key=OPENAI_API_KEY)
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+
+# Validate API key format
+if OPENAI_API_KEY and OPENAI_API_KEY.startswith("sk-") and len(OPENAI_API_KEY) > 20:
+    openai = OpenAI(api_key=OPENAI_API_KEY)
+else:
+    logger.error(f"Invalid OpenAI API key format: {OPENAI_API_KEY[:5]}... (showing only prefix)")
+    openai = None
 
 def identify_topical_clusters(urls, sitemap_stats):
     """
@@ -28,6 +34,11 @@ def identify_topical_clusters(urls, sitemap_stats):
         if not OPENAI_API_KEY:
             logger.error("OPENAI_API_KEY environment variable is not set")
             raise ValueError("OpenAI API key not provided. Please set the OPENAI_API_KEY environment variable.")
+            
+        # Check if the client is initialized properly
+        if openai is None:
+            logger.error("OpenAI client is not properly initialized")
+            raise ValueError("OpenAI client initialization failed. Please check your API key format.")
         
         # Prepare the URL list for analysis
         # Limit to 100 URLs to avoid token limits
@@ -155,6 +166,11 @@ def generate_blog_recommendations(clusters):
         if not OPENAI_API_KEY:
             logger.error("OPENAI_API_KEY environment variable is not set")
             raise ValueError("OpenAI API key not provided. Please set the OPENAI_API_KEY environment variable.")
+            
+        # Check if the client is initialized properly
+        if openai is None:
+            logger.error("OpenAI client is not properly initialized")
+            raise ValueError("OpenAI client initialization failed. Please check your API key format.")
         
         updated_clusters = clusters.copy()
         

@@ -129,6 +129,18 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
+        # Check if OpenAI API key is available
+        if not os.environ.get("OPENAI_API_KEY"):
+            logger.error("OPENAI_API_KEY environment variable is not set")
+            flash('OpenAI API key is not set. Please configure the API key.', 'danger')
+            return render_template('error.html', error="OpenAI API key not configured", sitemap_url=sitemap_url,
+                              error_type="Configuration Error",
+                              suggestions=[
+                                  "Set up your OpenAI API key in the environment variables",
+                                  "Ensure your API key has not expired",
+                                  "Contact the administrator if you're using a shared instance"
+                              ])
+            
         # Use OpenAI to identify topical clusters
         logger.info("Identifying topical clusters with OpenAI")
         try:
@@ -137,11 +149,19 @@ def analyze():
             
             # Generate blog post recommendations for each cluster
             logger.info("Generating blog post recommendations for each cluster")
-            clusters_with_recommendations = generate_blog_recommendations(clusters)
-            clusters = clusters_with_recommendations
+            try:
+                clusters_with_recommendations = generate_blog_recommendations(clusters)
+                clusters = clusters_with_recommendations
+            except Exception as rec_error:
+                logger.error(f"Error generating blog recommendations: {str(rec_error)}")
+                # If recommendations fail, we can still continue with clusters only
+                flash('Blog recommendations could not be generated, but clusters analysis is available.', 'warning')
+                # Add empty recommendations to each cluster
+                for cluster in clusters['clusters']:
+                    cluster['blog_recommendations'] = []
             
         except Exception as ai_error:
-            logger.error(f"Error with OpenAI API: {str(ai_error)}")
+            logger.error(f"Error in AI processing: {str(ai_error)}")
             flash(f'Error identifying topical clusters: {str(ai_error)}. Check API key and try again.', 'danger')
             return render_template('error.html', error=str(ai_error), sitemap_url=sitemap_url,
                                error_type="AI Processing Error",
