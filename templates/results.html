@@ -1,228 +1,150 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Analysis Results - Topical Cluster Analyzer</title>
-    <!-- Bootstrap CSS (Replit Theme) -->
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <title>Analysis Results - SEO Cluster Analysis</title>
+    <!-- Inter Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
-<body>
-    <!-- Header -->
-    <header class="py-4 bg-dark">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="mb-2">SEO Topical Cluster Analysis</h1>
-                    <p class="lead text-secondary mb-0">Results for: <span class="text-info">{{ sitemap_url }}</span></p>
+<body class="modern-ui">
+    <div class="container">
+        <div class="result-header">
+            <h1>Analysis Results</h1>
+            <a href="{{ url_for('index') }}" class="back-link">
+                <i data-lucide="arrow-left"></i>
+                <span>New Analysis</span>
+            </a>
+        </div>
+        
+        <div class="result-container">
+            <p>Results for: <strong>{{ sitemap_url }}</strong></p>
+            
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ sitemap_stats.total_urls }}</div>
+                    <div class="stat-label">Total URLs</div>
                 </div>
-                <div class="col-md-4 text-end">
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left me-2"></i>Analyze Another Sitemap
-                    </a>
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(sitemap_stats.avg_depth) }}</div>
+                    <div class="stat-label">Average Depth</div>
                 </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ clusters.clusters|length }}</div>
+                    <div class="stat-label">Topical Clusters</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ sitemap_stats.main_domain }}</div>
+                    <div class="stat-label">Domain</div>
+                </div>
+            </div>
+            
+            <div class="chart-grid" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 class="section-title">
+                        <i data-lucide="pie-chart"></i>
+                        <span>Topical Distribution</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="clusters-chart"></canvas>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 class="section-title">
+                        <i data-lucide="bar-chart-2"></i>
+                        <span>URL Depth Distribution</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="depth-chart"></canvas>
+                    </div>
+                </div>
+                <!-- Hidden chart data for JavaScript -->
+                <script id="chart-data" type="application/json">{{ clusters|tojson }}</script>
+                <script id="depth-data" type="application/json">{{ sitemap_stats.depth_distribution|tojson }}</script>
             </div>
         </div>
-    </header>
-
-    <main class="container py-4">
-        <!-- Site Stats Section -->
-        <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-chart-bar text-info me-2"></i>Sitemap Statistics</h2>
-            <div class="row g-4">
-                <div class="col-md-3">
-                    <div class="card bg-dark stat-card">
-                        <div class="stat-value">{{ sitemap_stats.total_urls }}</div>
-                        <div class="stat-label">Total URLs</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-dark stat-card">
-                        <div class="stat-value">{{ "%.1f"|format(sitemap_stats.avg_depth) }}</div>
-                        <div class="stat-label">Average Depth</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-dark stat-card">
-                        <div class="stat-value">{{ clusters.clusters|length }}</div>
-                        <div class="stat-label">Topical Clusters</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-dark stat-card">
-                        <div class="stat-value">{{ sitemap_stats.main_domain }}</div>
-                        <div class="stat-label">Domain</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Visualization Section -->
-        <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-chart-pie text-info me-2"></i>Cluster Visualization</h2>
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card bg-dark">
-                        <div class="card-body">
-                            <h5 class="card-title">Topical Distribution</h5>
-                            <div class="chart-container">
-                                <canvas id="clusters-chart"></canvas>
-                            </div>
-                            <!-- Hidden chart data for JavaScript -->
-                            <script id="chart-data" type="application/json">{{ clusters|tojson }}</script>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card bg-dark">
-                        <div class="card-body">
-                            <h5 class="card-title">URL Depth Distribution</h5>
-                            <div class="chart-container">
-                                <canvas id="depth-chart"></canvas>
-                            </div>
-                            <!-- Hidden depth data for JavaScript -->
-                            <script id="depth-data" type="application/json">{{ sitemap_stats.depth_distribution|tojson }}</script>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Top Clusters Section -->
-        <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-sitemap text-info me-2"></i>Top 5 SEO Topical Clusters</h2>
-            
-            <div class="row g-4">
-                {% for cluster in clusters.clusters %}
-                <div class="col-lg-6">
-                    <div class="card bg-dark cluster-card">
-                        <div class="card-body">
-                            <h3 class="cluster-title">{{ cluster.title }}</h3>
-                            <div class="badge bg-info mb-3">{{ cluster.count }} URLs</div>
-                            
-                            <p>{{ cluster.description }}</p>
-                            
-                            <h5 class="mt-4">SEO Significance:</h5>
-                            <p>{{ cluster.seo_significance }}</p>
-                            
-                            <h5 class="mt-4">Example URLs:</h5>
-                            <div class="list-group mb-3">
-                                {% for example in cluster.examples %}
-                                <div class="example-url mb-2">
-                                    <span>{{ example }}</span>
-                                    <button class="btn btn-sm btn-outline-secondary copy-btn" data-copy="{{ example }}">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            
-                            <h5 class="mt-4"><i class="fas fa-lightbulb text-warning me-2"></i>Recommended Blog Article Ideas:</h5>
-                            <div class="article-ideas mt-3">
-                                {% if cluster.article_ideas %}
-                                    <ul class="list-group">
-                                        {% for idea in cluster.article_ideas %}
-                                            <li class="list-group-item bg-dark border-info">
-                                                <h6 class="mb-1 text-info"><i class="fas fa-pen-fancy me-2"></i>{{ idea.headline }}</h6>
-                                                <p class="mb-0 small">{{ idea.description }}</p>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <p>No article ideas available for this cluster.</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+        
+        <h2 class="section-title">
+            <i data-lucide="network"></i>
+            <span>Top {{ clusters.clusters|length }} Topical Clusters</span>
+        </h2>
+        
+        <div class="cluster-grid">
+            {% for cluster in clusters.clusters %}
+            <div class="cluster-card">
+                <h3 class="cluster-title">{{ cluster.title }}</h3>
+                <div class="cluster-count">{{ cluster.count }} URLs</div>
+                
+                <p>{{ cluster.description }}</p>
+                
+                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">SEO Significance</h4>
+                <p style="color: var(--muted-foreground); font-size: 0.9rem;">{{ cluster.seo_significance }}</p>
+                
+                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">Example URLs</h4>
+                {% for example in cluster.examples %}
+                <div class="example-url">
+                    <span>{{ example }}</span>
+                    <button class="copy-btn" data-copy="{{ example }}">
+                        <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+                    </button>
                 </div>
                 {% endfor %}
-            </div>
-        </section>
-
-        <!-- Blog Content Strategy Section -->
-        <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-pen-fancy text-info me-2"></i>Blog Content Strategy</h2>
-            <div class="card bg-dark">
-                <div class="card-body">
-                    <div class="alert alert-warning">
-                        <h5><i class="fas fa-lightbulb me-2"></i>Content Opportunity Alert</h5>
-                        <p class="mb-0">We've analyzed your sitemap and generated tailored blog article ideas for each topical cluster. These suggestions are designed to fill content gaps and strengthen your topic authority. View the article recommendations listed under each cluster above.</p>
-                    </div>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h5 class="text-info">Content Strategy Benefits</h5>
-                            <ul>
-                                <li>Fill content gaps in your existing clusters</li>
-                                <li>Build more comprehensive topic coverage</li>
-                                <li>Target relevant long-tail keywords</li>
-                                <li>Increase internal linking opportunities</li>
-                                <li>Establish stronger topical authority</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h5 class="text-info">Implementation Tips</h5>
-                            <ul>
-                                <li>Prioritize clusters with highest traffic potential</li>
-                                <li>Create content calendars based on recommendations</li>
-                                <li>Develop comprehensive outlines for each article idea</li>
-                                <li>Include proper internal links to other cluster content</li>
-                                <li>Measure performance to refine your content strategy</li>
-                            </ul>
-                        </div>
-                    </div>
+                
+                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">
+                    <i data-lucide="lightbulb" style="width: 16px; height: 16px; vertical-align: middle;"></i>
+                    Article Recommendations
+                </h4>
+                <div class="article-ideas">
+                    {% if cluster.article_ideas %}
+                        <ul class="list-group" style="list-style: none; padding: 0;">
+                            {% for idea in cluster.article_ideas %}
+                                <li class="list-group-item">
+                                    <h6 style="margin: 0 0 0.25rem 0;">
+                                        <i data-lucide="pen" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                                        {{ idea.headline }}
+                                    </h6>
+                                    <p>{{ idea.description }}</p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No article ideas available</p>
+                    {% endif %}
                 </div>
             </div>
-        </section>
-        
-        <!-- Recommendations Section -->
-        <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-lightbulb text-warning me-2"></i>SEO Recommendations</h2>
-            <div class="card bg-dark">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5 class="text-info">Strengthen Your Clusters</h5>
-                            <ul>
-                                <li>Create pillar content for each topical cluster</li>
-                                <li>Improve internal linking between related topics</li>
-                                <li>Ensure each cluster has a clear hierarchy</li>
-                                <li>Add breadcrumbs to enhance navigation</li>
-                                <li>Use consistent URL structures within clusters</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h5 class="text-info">Optimize Your Content</h5>
-                            <ul>
-                                <li>Update top-performing pages with fresh content</li>
-                                <li>Address content gaps in weak clusters</li>
-                                <li>Use semantic keywords throughout related content</li>
-                                <li>Improve meta descriptions for key pages</li>
-                                <li>Consider consolidating similar content pieces</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container text-center">
-            <p class="mb-0">SEO Topical Cluster Analyzer using OpenAI</p>
-            <p class="small text-secondary mt-1">Analyze your website structure for better SEO performance</p>
+            {% endfor %}
         </div>
-    </footer>
+    </div>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Add copy functionality
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const text = button.getAttribute('data-copy');
+                    navigator.clipboard.writeText(text).then(() => {
+                        const icon = button.querySelector('i');
+                        // Temporarily change icon to check
+                        const originalHTML = icon.innerHTML;
+                        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                        setTimeout(() => {
+                            icon.innerHTML = originalHTML;
+                        }, 2000);
+                    });
+                });
+            });
+        });
+    </script>
+    
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

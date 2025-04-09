@@ -1,173 +1,68 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Topical Cluster Analyzer</title>
-    <!-- Bootstrap CSS (Replit Theme) -->
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <title>SEO Cluster Analysis</title>
+    <!-- Inter Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
-<body>
-    <!-- Header -->
-    <header class="py-4 bg-dark">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="display-4 mb-2">SEO Topical Cluster Analyzer</h1>
-                    <p class="lead text-secondary">Identify key topical clusters from your website's sitemap using AI-powered analysis</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <i class="fas fa-sitemap fa-4x text-info opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </header>
+<body class="modern-ui">
+    <div class="container">
+        <header>
+            <h1>SEO Cluster Analysis</h1>
+        </header>
 
-    <main class="container py-4">
-        <!-- Introduction Section -->
-        <section class="mb-5">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card bg-dark">
-                        <div class="card-body">
-                            <h2 class="card-title"><i class="fas fa-info-circle text-info me-2"></i>What This Tool Does</h2>
-                            <p class="card-text">Our SEO Topical Cluster Analyzer uses advanced AI to examine your website's sitemap and identify the most important topical clusters for SEO optimization.</p>
-                            
-                            <h5 class="mt-4">Key Features:</h5>
-                            <ul>
-                                <li>Automatically analyzes sitemap content</li>
-                                <li>Identifies top 5 topical clusters based on SEO best practices</li>
-                                <li>Shows URL count and examples for each cluster</li>
-                                <li>Provides SEO insights specific to your content</li>
-                                <li>Visualizes content distribution across topics</li>
-                                <li><span class="badge bg-warning text-dark">New!</span> Recommends blog article ideas for each topical cluster</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card bg-dark h-100">
-                        <div class="card-body">
-                            <h2 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i>Why It Matters</h2>
-                            <p class="card-text">Topical clusters help search engines understand your site's authority on specific subjects. Well-structured content clusters typically result in:</p>
-                            <ul>
-                                <li>Higher search rankings</li>
-                                <li>Better topical relevancy</li>
-                                <li>Improved internal linking opportunities</li>
-                                <li>Enhanced user navigation experience</li>
-                            </ul>
-                            <div class="mt-3 p-2 bg-warning-subtle border-start border-warning border-4 rounded">
-                                <h6 class="text-warning"><i class="fas fa-star me-1"></i> NEW: Blog Article Recommendations</h6>
-                                <p class="small mb-0">Our tool now identifies content opportunities by suggesting relevant blog article ideas for each topical cluster, helping you fill content gaps and strengthen your SEO strategy.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Input Form Section -->
-        <section class="my-5">
-            <div class="card bg-dark">
-                <div class="card-body">
-                    <h2 class="card-title mb-4"><i class="fas fa-search text-info me-2"></i>Analyze Your Sitemap</h2>
-                    
+        <main>
+            <div class="hero-section">
+                <div class="card">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             {% for category, message in messages %}
-                                <div class="alert alert-{{ category }}" role="alert">
-                                    {{ message }}
-                                </div>
+                                <div class="alert {{ category }}">{{ message }}</div>
                             {% endfor %}
                         {% endif %}
                     {% endwith %}
                     
                     <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post">
-                        <div class="mb-3">
-                            <label for="sitemap_url" class="form-label">Sitemap URL:</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-link"></i></span>
-                                <input type="text" class="form-control" id="sitemap_url" name="sitemap_url" 
-                                       placeholder="example.com/sitemap.xml or https://example.com/sitemap.xml" required>
-                            </div>
-                            <div class="form-text help-text mt-2">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Enter the full URL of your sitemap (e.g., example.com/sitemap.xml). We'll add https:// if you don't include it.
+                        <div class="form-group">
+                            <label for="sitemap_url">Enter your sitemap URL</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="globe"></i>
+                                <input type="text" id="sitemap_url" name="sitemap_url" 
+                                       placeholder="example.com/sitemap.xml" required>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" id="submit-button" class="btn btn-primary">
-                                <i class="fas fa-chart-network me-2"></i>Analyze Sitemap
-                                <span id="loading-indicator" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            </button>
-                        </div>
+                        <button type="submit" id="submit-button" class="button">
+                            <span>Analyze Sitemap</span>
+                            <span id="loading-indicator" class="spinner-loader hidden"></span>
+                        </button>
                     </form>
                 </div>
             </div>
-        </section>
-        
-        <!-- Examples Section -->
-        <section class="my-5">
-            <h2 class="mb-4"><i class="fas fa-file-alt text-info me-2"></i>Example Sitemaps to Try</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card bg-dark h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">WordPress Blog</h5>
-                            <p class="card-text">Simple blog with categories and tags</p>
-                            <code>wordpress.org/sitemap.xml</code>
-                            <button class="btn btn-sm btn-outline-info mt-2 copy-btn" data-copy="wordpress.org/sitemap.xml">
-                                <i class="fas fa-copy me-1"></i>Copy
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">News Website</h5>
-                            <p class="card-text">News site with multiple categories</p>
-                            <code>cnn.com/sitemaps/sitemap-index.xml</code>
-                            <button class="btn btn-sm btn-outline-info mt-2 copy-btn" data-copy="cnn.com/sitemaps/sitemap-index.xml">
-                                <i class="fas fa-copy me-1"></i>Copy
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">E-commerce Store</h5>
-                            <p class="card-text">Online shop with product categories</p>
-                            <code>bestbuy.com/sitemap.xml</code>
-                            <button class="btn btn-sm btn-outline-info mt-2 copy-btn" data-copy="bestbuy.com/sitemap.xml">
-                                <i class="fas fa-copy me-1"></i>Copy
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+        </main>
+    </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container text-center">
-            <p class="mb-0">SEO Topical Cluster Analyzer using OpenAI</p>
-            <p class="small text-secondary mt-1">Analyze your website structure for better SEO performance</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Show loading indicator when form is submitted
+            document.getElementById('sitemap-form').addEventListener('submit', function() {
+                document.getElementById('loading-indicator').classList.remove('hidden');
+                document.getElementById('submit-button').disabled = true;
+            });
+        });
+    </script>
 </body>
 </html>

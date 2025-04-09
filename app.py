@@ -82,7 +82,7 @@ def analyze():
                                ])
         
         if not urls:
-            flash('No URLs found in the sitemap or invalid sitemap format', 'warning')
+            flash('No URLs found in the sitemap or invalid sitemap format', 'danger')
             return redirect(url_for('index'))
         
         # Get basic stats about the sitemap
@@ -139,7 +139,7 @@ def results():
     clusters = session.get('clusters')
     
     if not sitemap_url or not sitemap_stats or not clusters:
-        flash('No analysis results found. Please submit a sitemap URL.', 'warning')
+        flash('No analysis results found. Please submit a sitemap URL.', 'danger')
         return redirect(url_for('index'))
     
     return render_template(

@@ -1,113 +1,113 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error - SEO Topical Cluster Analyzer</title>
-    <!-- Bootstrap CSS (Replit Theme) -->
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Error - SEO Cluster Analysis</title>
+    <!-- Inter Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
-<body>
-    <!-- Header -->
-    <header class="py-4 bg-dark">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="mb-2">Error Occurred</h1>
-                    <p class="lead text-secondary">SEO Topical Cluster Analyzer</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-light">
-                        <i class="fas fa-home me-2"></i>Return to Home
-                    </a>
-                </div>
-            </div>
+<body class="modern-ui">
+    <div class="container">
+        <div class="result-header">
+            <h1>Error Occurred</h1>
+            <a href="{{ url_for('index') }}" class="back-link">
+                <i data-lucide="home"></i>
+                <span>Return to Home</span>
+            </a>
         </div>
-    </header>
-
-    <main class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card bg-dark border-danger">
-                    <div class="card-body text-center p-5">
-                        <i class="fas fa-exclamation-triangle text-danger fa-5x mb-4"></i>
-                        <h2 class="card-title text-danger">{{ error_type|default('Something Went Wrong') }}</h2>
-                        
-                        {% if sitemap_url %}
-                        <div class="card-text mb-3">
-                            <span class="text-secondary">URL:</span> 
-                            <code class="text-info">{{ sitemap_url }}</code>
-                        </div>
-                        {% endif %}
-                        
-                        <p class="card-text mb-4">{{ error }}</p>
-                        
-                        {% if xml_sample %}
-                        <div class="card mb-4 bg-dark">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <span>XML Content Sample</span>
-                                <button class="btn btn-sm btn-secondary" 
-                                        data-bs-toggle="collapse" 
-                                        data-bs-target="#xmlSample" 
-                                        aria-expanded="false">
-                                    Show/Hide
-                                </button>
-                            </div>
-                            <div class="collapse" id="xmlSample">
-                                <div class="card-body">
-                                    <pre class="bg-dark text-start text-wrap overflow-auto p-3"><code>{{ xml_sample }}</code></pre>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="alert alert-secondary">
-                            <h5 class="mb-3">Suggested Solutions:</h5>
-                            <ul class="text-start">
-                                {% if suggestions %}
-                                    {% for suggestion in suggestions %}
-                                        <li>{{ suggestion }}</li>
-                                    {% endfor %}
-                                {% else %}
-                                    <li>Check if the sitemap URL is correct and accessible</li>
-                                    <li>Ensure the sitemap is in valid XML format</li>
-                                    <li>Try a different sitemap if this one continues to fail</li>
-                                    <li>For WordPress sites, try '/post-sitemap.xml', '/page-sitemap.xml', or '/wp-sitemap.xml'</li>
-                                    <li>Check if the sitemap is too large (try a sub-sitemap)</li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
-                                <i class="fas fa-redo me-2"></i>Try Again
-                            </a>
-                            
-                            {% if sitemap_url %}
-                            <a href="{{ sitemap_url }}" target="_blank" class="btn btn-outline-secondary">
-                                <i class="fas fa-external-link-alt me-2"></i>View Original Sitemap
-                            </a>
-                            {% endif %}
+        
+        <div class="result-container" style="max-width: 700px; margin: 0 auto;">
+            <div style="text-align: center; padding: 2rem 0;">
+                <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: #ff3333; margin-bottom: 1rem;"></i>
+                <h2 style="margin-bottom: 1.5rem; color: #ff3333;">{{ error_type|default('Something Went Wrong') }}</h2>
+                
+                {% if sitemap_url %}
+                <div style="margin-bottom: 1.5rem;">
+                    <span style="color: var(--muted-foreground);">URL:</span> 
+                    <code style="background-color: var(--muted); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">{{ sitemap_url }}</code>
+                </div>
+                {% endif %}
+                
+                <p style="margin-bottom: 2rem;">{{ error }}</p>
+                
+                {% if xml_sample %}
+                <div style="border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 2rem; text-align: left;">
+                    <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <span>XML Content Sample</span>
+                        <button id="toggleXml" style="background: none; border: none; color: var(--foreground); cursor: pointer;">
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                    </div>
+                    <div id="xmlSample" style="display: none;">
+                        <div style="padding: 1rem;">
+                            <pre style="background-color: var(--card); padding: 1rem; border-radius: var(--radius); overflow-x: auto; font-size: 0.875rem; margin: 0;"><code>{{ xml_sample }}</code></pre>
                         </div>
                     </div>
                 </div>
+                {% endif %}
+                
+                <div style="background-color: var(--muted); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: left;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Suggested Solutions:</h3>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 0;">
+                        {% if suggestions %}
+                            {% for suggestion in suggestions %}
+                                <li style="margin-bottom: 0.5rem;">{{ suggestion }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li style="margin-bottom: 0.5rem;">Check if the sitemap URL is correct and accessible</li>
+                            <li style="margin-bottom: 0.5rem;">Ensure the sitemap is in valid XML format</li>
+                            <li style="margin-bottom: 0.5rem;">Try a different sitemap if this one continues to fail</li>
+                            <li style="margin-bottom: 0.5rem;">For WordPress sites, try '/post-sitemap.xml', '/page-sitemap.xml', or '/wp-sitemap.xml'</li>
+                            <li style="margin-bottom: 0.5rem;">Check if the sitemap is too large (try a sub-sitemap)</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div>
+                    <a href="{{ url_for('index') }}" class="button" style="display: inline-flex; max-width: 200px; margin-right: 1rem;">
+                        <i data-lucide="refresh-cw" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+                        <span>Try Again</span>
+                    </a>
+                    
+                    {% if sitemap_url %}
+                    <a href="{{ sitemap_url }}" target="_blank" style="display: inline-flex; align-items: center; color: var(--muted-foreground); text-decoration: none;">
+                        <i data-lucide="external-link" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+                        <span>View Original Sitemap</span>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container text-center">
-            <p class="mb-0">SEO Topical Cluster Analyzer using OpenAI</p>
-            <p class="small text-secondary mt-1">Analyze your website structure for better SEO performance</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Toggle XML sample
+            const toggleBtn = document.getElementById('toggleXml');
+            const xmlSample = document.getElementById('xmlSample');
+            
+            if (toggleBtn && xmlSample) {
+                toggleBtn.addEventListener('click', () => {
+                    const isVisible = xmlSample.style.display !== 'none';
+                    xmlSample.style.display = isVisible ? 'none' : 'block';
+                    
+                    // Change icon
+                    const icon = toggleBtn.querySelector('i');
+                    if (icon) {
+                        icon.setAttribute('data-lucide', isVisible ? 'chevron-down' : 'chevron-up');
+                        lucide.createIcons();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
