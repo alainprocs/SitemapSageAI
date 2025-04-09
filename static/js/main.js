@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const chartContainer = document.getElementById('clusters-chart');
     if (chartContainer) {
         initializeClusterChart();
-        initializeTextAnimations();
     }
     
     // Copy to clipboard functionality
@@ -32,180 +31,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const textToCopy = this.getAttribute('data-copy');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 // Change button text temporarily
-                const originalIcon = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-check"></i>';
-                // Add a success class
-                this.classList.add('btn-success');
-                this.classList.remove('btn-outline-secondary');
-                
+                const originalText = this.textContent;
+                this.textContent = 'Copied!';
                 setTimeout(() => {
-                    this.innerHTML = originalIcon;
-                    // Restore original class
-                    this.classList.remove('btn-success');
-                    this.classList.add('btn-outline-secondary');
+                    this.textContent = originalText;
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
-                // Show error state
-                this.innerHTML = '<i class="fas fa-times"></i>';
-                this.classList.add('btn-danger');
-                this.classList.remove('btn-outline-secondary');
-                
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fas fa-copy"></i>';
-                    this.classList.remove('btn-danger');
-                    this.classList.add('btn-outline-secondary');
-                }, 2000);
             });
         });
     });
 });
-
-// Text animation functionality inspired by the JSX Preview component
-function initializeTextAnimations() {
-    // Store all elements to animate for coordinated timing
-    const animationElements = {
-        titles: document.querySelectorAll('.cluster-title'),
-        descriptions: document.querySelectorAll('.cluster-card p'),
-        badges: document.querySelectorAll('.badge'),
-        headings: document.querySelectorAll('.cluster-card h5'),
-        urls: document.querySelectorAll('.example-url'),
-        recommendationItems: document.querySelectorAll('.recommendation-list li'),
-        blogRecommendations: document.querySelectorAll('.recommendation-item')
-    };
-    
-    // Initial setup for animations
-    setupElementsForAnimation(animationElements);
-    
-    // Calculate total animation time based on content amount
-    const estimatedBaseDelay = 800; // Base delay before starting animations
-    
-    // Start sequential animations
-    startTitleAnimations(animationElements.titles, estimatedBaseDelay);
-    startDescriptionAnimations(animationElements.descriptions, estimatedBaseDelay + 1000);
-    startFadeInAnimations(animationElements.badges, estimatedBaseDelay + 1500);
-    startFadeInAnimations(animationElements.headings, estimatedBaseDelay + 2000);
-    startURLAnimations(animationElements.urls, estimatedBaseDelay + 2500);
-    startSequentialFadeIn(animationElements.recommendationItems, estimatedBaseDelay + 3000);
-    startSequentialFadeIn(animationElements.blogRecommendations, estimatedBaseDelay + 3500);
-}
-
-// Set up elements for animation
-function setupElementsForAnimation(elements) {
-    // Prepare titles and paragraphs for typing animation
-    [...elements.titles, ...elements.descriptions].forEach(element => {
-        // Only animate if content isn't too long
-        if (element.textContent.length <= 150) {
-            element.dataset.originalText = element.textContent;
-            element.textContent = '';
-            element.classList.add('animate-text');
-        }
-    });
-    
-    // Prepare badges, headings and URLs for fade-in animation
-    [...elements.badges, ...elements.headings, ...elements.urls, ...elements.recommendationItems, ...elements.blogRecommendations].forEach(element => {
-        element.style.opacity = 0;
-        element.style.transform = 'translateY(15px)';
-        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    });
-}
-
-// Animate titles with typing effect
-function startTitleAnimations(elements, baseDelay) {
-    elements.forEach((element, index) => {
-        if (!element.dataset.originalText) return;
-        
-        const delay = baseDelay + (index * 400);
-        const originalText = element.dataset.originalText;
-        
-        setTimeout(() => {
-            let currentIndex = 0;
-            const textInterval = setInterval(() => {
-                if (currentIndex < originalText.length) {
-                    element.textContent += originalText[currentIndex];
-                    currentIndex++;
-                } else {
-                    clearInterval(textInterval);
-                    element.classList.remove('animate-text');
-                    element.classList.add('animate-complete');
-                }
-            }, 25); // Faster typing for titles
-        }, delay);
-    });
-}
-
-// Animate descriptions with typing effect
-function startDescriptionAnimations(elements, baseDelay) {
-    elements.forEach((element, index) => {
-        if (!element.dataset.originalText) return;
-        
-        const delay = baseDelay + (index * 300);
-        const originalText = element.dataset.originalText;
-        
-        setTimeout(() => {
-            let currentIndex = 0;
-            const textInterval = setInterval(() => {
-                if (currentIndex < originalText.length) {
-                    element.textContent += originalText[currentIndex];
-                    currentIndex++;
-                } else {
-                    clearInterval(textInterval);
-                    element.classList.remove('animate-text');
-                    element.classList.add('animate-complete');
-                }
-            }, 10); // Ultra-fast typing for longer descriptions
-        }, delay);
-    });
-}
-
-// Fade in elements like badges and headings
-function startFadeInAnimations(elements, baseDelay) {
-    elements.forEach((element, index) => {
-        setTimeout(() => {
-            element.style.opacity = 1;
-            element.style.transform = 'translateY(0)';
-        }, baseDelay + (index * 150));
-    });
-}
-
-// Special animation for URL examples
-function startURLAnimations(elements, baseDelay) {
-    elements.forEach((url, index) => {
-        setTimeout(() => {
-            // Quick flash effect before fade in (monochrome theme)
-            url.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-            
-            // Then fade in
-            setTimeout(() => {
-                url.style.opacity = 1;
-                url.style.transform = 'translateY(0)';
-                
-                // Return to normal background
-                setTimeout(() => {
-                    url.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-                }, 300);
-                
-            }, 100);
-        }, baseDelay + (index * 200));
-    });
-}
-
-// Create a sequential fade-in effect for recommendations
-function startSequentialFadeIn(elements, baseDelay) {
-    elements.forEach((element, index) => {
-        setTimeout(() => {
-            element.style.opacity = 1;
-            element.style.transform = 'translateY(0)';
-            
-            // Add a subtle highlight effect for monochrome theme
-            element.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            setTimeout(() => {
-                element.style.backgroundColor = 'transparent';
-            }, 500);
-            
-        }, baseDelay + (index * 150));
-    });
-}
 
 function initializeClusterChart() {
     try {
@@ -257,16 +93,16 @@ function initializeClusterChart() {
         
         console.log('Prepared chart data:', { titles, counts });
         
-        // Monochrome theme colors (shades of gray)
+        // Ensure we have enough colors (handle more than 5 clusters if needed)
         const backgroundColors = [
-            'rgba(220, 220, 220, 0.8)',
-            'rgba(190, 190, 190, 0.8)',
-            'rgba(160, 160, 160, 0.8)',
-            'rgba(130, 130, 130, 0.8)',
-            'rgba(100, 100, 100, 0.8)',
-            'rgba(70, 70, 70, 0.8)',
-            'rgba(50, 50, 50, 0.8)',
-            'rgba(30, 30, 30, 0.8)'
+            'rgba(75, 192, 192, 0.8)',
+            'rgba(54, 162, 235, 0.8)',
+            'rgba(153, 102, 255, 0.8)',
+            'rgba(255, 206, 86, 0.8)',
+            'rgba(255, 99, 132, 0.8)',
+            'rgba(255, 159, 64, 0.8)',
+            'rgba(201, 203, 207, 0.8)',
+            'rgba(0, 162, 151, 0.8)'
         ];
         
         const borderColors = backgroundColors.map(color => color.replace('0.8', '1'));
@@ -346,8 +182,8 @@ function initializeClusterChart() {
                 datasets: [{
                     label: 'URLs',
                     data: depthCounts,
-                    backgroundColor: 'rgba(180, 180, 180, 0.8)',
-                    borderColor: 'rgba(180, 180, 180, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
                 }]
             },
