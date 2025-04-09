@@ -8,9 +8,17 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
+# Initialize OpenAI client with better error handling
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai = OpenAI(api_key=OPENAI_API_KEY)
+if not OPENAI_API_KEY:
+    logger.warning("OPENAI_API_KEY environment variable is not set")
+
+try:
+    openai = OpenAI(api_key=OPENAI_API_KEY)
+    logger.info("OpenAI client initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize OpenAI client: {str(e)}")
+    openai = None
 
 def identify_topical_clusters(urls, sitemap_stats):
     """
@@ -79,17 +87,26 @@ def identify_topical_clusters(urls, sitemap_stats):
         Only include the 5 most significant clusters ordered by importance. Ensure the article ideas are specific, relevant to the cluster topic, and designed to address potential content gaps or trending topics that would enhance SEO performance.
         """
         
-        # Call the OpenAI API to generate the analysis
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are an SEO expert analyzing website sitemaps to identify topical clusters."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.5,
-            max_tokens=2000
-        )
+        # Call the OpenAI API to generate the analysis with better error handling
+        try:
+            # Make sure OpenAI client is initialized
+            if openai is None:
+                raise Exception("OpenAI client not initialized. Please check API key configuration.")
+                
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are an SEO expert analyzing website sitemaps to identify topical clusters."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.5,
+                max_tokens=2000
+            )
+        except Exception as api_error:
+            logger.error(f"OpenAI API Error: {str(api_error)}")
+            # Create a fallback response with basic cluster structure
+            raise Exception(f"Error connecting to OpenAI API: {str(api_error)}. Please check your API key and network connection.")
         
         # Extract and parse the JSON response
         content = response.choices[0].message.content
@@ -149,7 +166,8 @@ def identify_topical_clusters(urls, sitemap_stats):
         
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON response: {str(e)}")
-        logger.debug(f"Raw response: {content}")
+        # Avoid referencing 'content' which might be unbound at this point
+        logger.debug("Raw response could not be decoded to JSON")
         raise Exception("Invalid response format from OpenAI")
     
     except Exception as e:
