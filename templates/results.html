@@ -126,23 +126,14 @@
                             <h5 class="mt-4"><i class="fas fa-lightbulb text-warning me-2"></i>Recommended Blog Article Ideas:</h5>
                             <div class="article-ideas mt-3">
                                 {% if cluster.article_ideas %}
-                                    <div class="accordion" id="articleIdeas-cluster{{ loop.index }}">
+                                    <ul class="list-group">
                                         {% for idea in cluster.article_ideas %}
-                                            {% set idea_index = loop.index %}
-                                            <div class="accordion-item bg-dark">
-                                                <h2 class="accordion-header">
-                                                    <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#cluster{{ loop.parent.loop.index }}-idea{{ idea_index }}" aria-expanded="false">
-                                                        <i class="fas fa-pen-fancy text-info me-2"></i>{{ idea.headline }}
-                                                    </button>
-                                                </h2>
-                                                <div id="cluster{{ loop.parent.loop.index }}-idea{{ idea_index }}" class="accordion-collapse collapse" data-bs-parent="#articleIdeas-cluster{{ loop.parent.loop.index }}">
-                                                    <div class="accordion-body">
-                                                        <p>{{ idea.description }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <li class="list-group-item bg-dark border-info">
+                                                <h6 class="mb-1 text-info"><i class="fas fa-pen-fancy me-2"></i>{{ idea.headline }}</h6>
+                                                <p class="mb-0 small">{{ idea.description }}</p>
+                                            </li>
                                         {% endfor %}
-                                    </div>
+                                    </ul>
                                 {% else %}
                                     <p>No article ideas available for this cluster.</p>
                                 {% endif %}
@@ -161,7 +152,7 @@
                 <div class="card-body">
                     <div class="alert alert-warning">
                         <h5><i class="fas fa-lightbulb me-2"></i>Content Opportunity Alert</h5>
-                        <p class="mb-0">We've analyzed your sitemap and generated tailored blog article ideas for each topical cluster. These suggestions are designed to fill content gaps and strengthen your topic authority. Expand each cluster above to view article recommendations.</p>
+                        <p class="mb-0">We've analyzed your sitemap and generated tailored blog article ideas for each topical cluster. These suggestions are designed to fill content gaps and strengthen your topic authority. View the article recommendations listed under each cluster above.</p>
                     </div>
                     
                     <div class="row mt-4">

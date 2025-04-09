@@ -83,32 +83,30 @@ section {
 }
 
 /* Article ideas styling */
-.article-ideas .accordion-item {
-    border: 1px solid rgba(var(--bs-info-rgb), 0.2);
+.article-ideas .list-group-item {
     margin-bottom: 0.5rem;
-    border-radius: 0.375rem;
+    border-left: 3px solid var(--bs-info);
+    transition: all 0.2s ease-in-out;
 }
 
-.article-ideas .accordion-button {
-    border-radius: 0.375rem;
-    font-weight: 500;
-}
-
-.article-ideas .accordion-button:not(.collapsed) {
+.article-ideas .list-group-item:hover {
     background-color: rgba(var(--bs-info-rgb), 0.1);
-    box-shadow: none;
-}
-
-.article-ideas .accordion-button:focus {
-    box-shadow: none;
-    border-color: rgba(var(--bs-info-rgb), 0.5);
-}
-
-.article-ideas .accordion-body {
-    background-color: var(--bs-dark);
-    border-top: 1px solid rgba(var(--bs-info-rgb), 0.2);
+    transform: translateX(3px);
 }
 
 .article-ideas .fas.fa-pen-fancy {
     color: var(--bs-info);
+}
+
+.article-ideas h6 {
+    font-weight: 600;
+}
+
+.article-ideas .list-group {
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.article-ideas p {
+    color: var(--bs-secondary);
 }
