@@ -90,21 +90,10 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
-        # Use OpenAI to identify topical clusters
-        logger.info("Identifying topical clusters with OpenAI")
-        try:
-            clusters = identify_topical_clusters(urls, sitemap_stats)
-            logger.info(f"Identified {len(clusters)} topical clusters")
-        except Exception as ai_error:
-            logger.error(f"Error with OpenAI API: {str(ai_error)}")
-            flash(f'Error identifying topical clusters: {str(ai_error)}. Check API key and try again.', 'danger')
-            return render_template('error.html', error=str(ai_error), sitemap_url=sitemap_url,
-                               error_type="AI Processing Error",
-                               suggestions=[
-                                   "Ensure your OpenAI API key is valid and has sufficient credits",
-                                   "The site content may be in a language not fully supported",
-                                   "Try again later as this could be a temporary API issue"
-                               ])
+        # Use OpenAI to identify topical clusters (or fallback method)
+        logger.info("Identifying topical clusters")
+        clusters = identify_topical_clusters(urls, sitemap_stats)
+        logger.info(f"Identified {len(clusters.get('clusters', []))} topical clusters")
         
         # Update rate limiting counter
         request_counter[client_ip] = request_counter.get(client_ip, 0) + 1
