@@ -14,53 +14,79 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body class="modern-ui">
-    <div class="container">
-        <div class="result-header">
-            <h1>Analysis Results</h1>
-            <a href="{{ url_for('index') }}" class="back-link">
+    <!-- Hero Section with grid background -->
+    <div class="hero-section-container" style="min-height: auto; padding-bottom: 0;">
+        <!-- Background gradient -->
+        <div class="hero-bg-gradient"></div>
+        
+        <!-- Grid Animation -->
+        <div class="retro-grid">
+            <div class="grid-inner">
+                <div class="grid-lines"></div>
+            </div>
+            <div class="grid-fade"></div>
+        </div>
+        
+        <div class="hero-content" style="padding: 2rem 1rem;">
+            <!-- Small tag at top -->
+            <div class="hero-tag">
+                <span>Sitemap Analysis</span>
+                <i data-lucide="check-circle" class="tag-icon"></i>
+            </div>
+            
+            <!-- Main heading with gradient -->
+            <h1 class="hero-title" style="margin-bottom: 0.5rem;">
+                <span class="title-regular">Topical Clusters for </span>
+                <span class="title-gradient">{{ sitemap_stats.main_domain }}</span>
+            </h1>
+            
+            <!-- Back to home link -->
+            <a href="{{ url_for('index') }}" class="back-link" style="margin-bottom: 2rem;">
                 <i data-lucide="arrow-left"></i>
                 <span>New Analysis</span>
             </a>
         </div>
-        
-        <div class="result-container">
-            <p>Results for: <strong>{{ sitemap_url }}</strong></p>
+    </div>
+    
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+        <div class="result-container" style="margin-top: -2rem; position: relative; z-index: 20; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);">
+            <p style="margin-bottom: 1.5rem; color: var(--muted-foreground);">Analyzed <strong>{{ sitemap_stats.total_urls }}</strong> URLs from <strong>{{ sitemap_url }}</strong></p>
             
             <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-value">{{ sitemap_stats.total_urls }}</div>
+                <div class="stat-item" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02));">
+                    <div class="stat-value title-gradient" style="font-size: 2.5rem;">{{ sitemap_stats.total_urls }}</div>
                     <div class="stat-label">Total URLs</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value">{{ "%.1f"|format(sitemap_stats.avg_depth) }}</div>
+                <div class="stat-item" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02));">
+                    <div class="stat-value title-gradient" style="font-size: 2.5rem;">{{ "%.1f"|format(sitemap_stats.avg_depth) }}</div>
                     <div class="stat-label">Average Depth</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value">{{ clusters.clusters|length }}</div>
+                <div class="stat-item" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02));">
+                    <div class="stat-value title-gradient" style="font-size: 2.5rem;">{{ clusters.clusters|length }}</div>
                     <div class="stat-label">Topical Clusters</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value">{{ sitemap_stats.main_domain }}</div>
+                <div class="stat-item" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02));">
+                    <div class="stat-value" style="font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis;">{{ sitemap_stats.main_domain }}</div>
                     <div class="stat-label">Domain</div>
                 </div>
             </div>
             
-            <div class="chart-grid" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem;">
+            <div class="chart-grid" style="display: flex; flex-wrap: wrap; gap: 2rem; margin: 2rem 0;">
                 <div style="flex: 1; min-width: 300px;">
                     <h3 class="section-title">
-                        <i data-lucide="pie-chart"></i>
+                        <i data-lucide="pie-chart" style="color: #8B5CF6;"></i>
                         <span>Topical Distribution</span>
                     </h3>
-                    <div class="chart-container">
+                    <div class="chart-container" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(139, 92, 246, 0.1);">
                         <canvas id="clusters-chart"></canvas>
                     </div>
                 </div>
                 <div style="flex: 1; min-width: 300px;">
                     <h3 class="section-title">
-                        <i data-lucide="bar-chart-2"></i>
+                        <i data-lucide="bar-chart-2" style="color: #8B5CF6;"></i>
                         <span>URL Depth Distribution</span>
                     </h3>
-                    <div class="chart-container">
+                    <div class="chart-container" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(139, 92, 246, 0.1);">
                         <canvas id="depth-chart"></canvas>
                     </div>
                 </div>
@@ -70,25 +96,33 @@
             </div>
         </div>
         
-        <h2 class="section-title">
-            <i data-lucide="network"></i>
+        <h2 class="section-title" style="margin-top: 3rem; margin-bottom: 2rem;">
+            <i data-lucide="network" style="color: #8B5CF6;"></i>
             <span>Top {{ clusters.clusters|length }} Topical Clusters</span>
         </h2>
         
         <div class="cluster-grid">
             {% for cluster in clusters.clusters %}
-            <div class="cluster-card">
-                <h3 class="cluster-title">{{ cluster.title }}</h3>
-                <div class="cluster-count">{{ cluster.count }} URLs</div>
+            <div class="cluster-card" style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(139, 92, 246, 0.1); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+                <h3 class="cluster-title" style="font-size: 1.4rem; margin-bottom: 0.75rem;">{{ cluster.title }}</h3>
+                <div class="cluster-count" style="background: linear-gradient(to right, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)); border: 1px solid rgba(139, 92, 246, 0.2);">
+                    {{ cluster.count }} URLs
+                </div>
                 
-                <p>{{ cluster.description }}</p>
+                <p style="margin: 1rem 0; line-height: 1.5;">{{ cluster.description }}</p>
                 
-                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">SEO Significance</h4>
-                <p style="color: var(--muted-foreground); font-size: 0.9rem;">{{ cluster.seo_significance }}</p>
+                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #8B5CF6;">
+                    <i data-lucide="trending-up" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                    SEO Significance
+                </h4>
+                <p style="color: var(--muted-foreground); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">{{ cluster.seo_significance }}</p>
                 
-                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">Example URLs</h4>
+                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #8B5CF6;">
+                    <i data-lucide="link" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Example URLs
+                </h4>
                 {% for example in cluster.examples %}
-                <div class="example-url">
+                <div class="example-url" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(139, 92, 246, 0.1);">
                     <span>{{ example }}</span>
                     <button class="copy-btn" data-copy="{{ example }}">
                         <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
@@ -96,20 +130,20 @@
                 </div>
                 {% endfor %}
                 
-                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">
-                    <i data-lucide="lightbulb" style="width: 16px; height: 16px; vertical-align: middle;"></i>
+                <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #8B5CF6;">
+                    <i data-lucide="lightbulb" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.5rem;"></i>
                     Article Recommendations
                 </h4>
                 <div class="article-ideas">
                     {% if cluster.article_ideas %}
                         <ul class="list-group" style="list-style: none; padding: 0;">
                             {% for idea in cluster.article_ideas %}
-                                <li class="list-group-item">
-                                    <h6 style="margin: 0 0 0.25rem 0;">
+                                <li class="list-group-item" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(139, 92, 246, 0.1); margin-bottom: 0.75rem;">
+                                    <h6 style="margin: 0 0 0.5rem 0; font-weight: 600; color: #EC4899;">
                                         <i data-lucide="pen" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.5rem;"></i>
                                         {{ idea.headline }}
                                     </h6>
-                                    <p>{{ idea.description }}</p>
+                                    <p style="color: var(--muted-foreground); font-size: 0.9rem; line-height: 1.5;">{{ idea.description }}</p>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -119,6 +153,17 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
+        
+        <!-- Footer section -->
+        <div style="text-align: center; margin: 4rem 0 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+            <div class="hero-tag" style="margin-bottom: 1rem;">
+                <span>Powered by AI</span>
+                <i data-lucide="cpu" class="tag-icon"></i>
+            </div>
+            <p style="color: var(--muted-foreground); font-size: 0.875rem;">
+                This analysis was powered by OpenAI. The topical clusters and article recommendations are based on SEO best practices.
+            </p>
         </div>
     </div>
 
