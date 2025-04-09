@@ -2,7 +2,7 @@ import os
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from sitemap_analyzer import fetch_sitemap, parse_sitemap, analyze_sitemap_structure
-from openai_client import identify_topical_clusters
+from openai_client import identify_topical_clusters, test_openai_connection
 
 # Set up logging for debugging
 logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +22,11 @@ def index():
     # Always inform users about what they'll get
     flash('SEO Topical Cluster Analysis: Enter a sitemap URL to analyze your website content structure', 'info')
     
+    # Check for OpenAI API key before users try to use the tool
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key or len(api_key) < 20 or not api_key.startswith('sk-'):
+        flash('Warning: The OpenAI API key appears to be invalid. This tool ONLY uses the OpenAI API with NO mock data fallbacks.', 'warning')
+    
     # Only using real OpenAI API - inform the user
     flash('Enter your sitemap URL to get AI-powered SEO analysis of your content', 'info')
     
@@ -38,6 +43,9 @@ def analyze():
     elif api_key.startswith(('sk_test_', 'sk_live_')):
         logger.error("Invalid API key format (looks like a Stripe key)")
         raise Exception("Your OpenAI API key appears to be a Stripe key, not an OpenAI key.")
+    elif not api_key.startswith('sk-') and not api_key.startswith('sk-pr'):
+        logger.error(f"Invalid API key format (should start with 'sk-')")
+        raise Exception("Your OpenAI API key appears to be in an invalid format. OpenAI API keys should start with 'sk-'.")
     elif len(api_key) < 20:  # OpenAI keys are typically longer
         logger.error("API key appears too short to be valid")
         raise Exception("Your OpenAI API key appears to be invalid (too short).")
@@ -108,8 +116,17 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
+        # Test OpenAI API connection first before starting analysis
+        logger.info("Testing OpenAI API connection")
+        try:
+            test_openai_connection()
+            logger.info("OpenAI API connection test successful")
+        except Exception as api_test_error:
+            logger.error(f"OpenAI API connection test failed: {str(api_test_error)}")
+            raise Exception(f"OpenAI API connection error: {str(api_test_error)}. Please verify your API key and connection.")
+        
         # Get topical clusters using OpenAI API exclusively
-        logger.info("Identifying topical clusters")
+        logger.info("Identifying topical clusters with OpenAI API (NO mock data)")
         try:
             # Use only OpenAI API - no fallback to mock data
             clusters = identify_topical_clusters(urls, sitemap_stats)
@@ -176,7 +193,27 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     """Handle 500 errors."""
-    return render_template('error.html', error='Internal server error'), 500
+    error_message = str(e)
+    if "openai" in error_message.lower() or "api" in error_message.lower():
+        error_message = "OpenAI API connection error. The API key may be invalid or there may be network connectivity issues."
+        suggestions = [
+            "Check that your OpenAI API key is valid and has sufficient credits",
+            "Verify internet connectivity to the OpenAI API servers",
+            "Try again later as OpenAI API may be experiencing temporary issues",
+            "Check if there are any rate limits or quota issues with your OpenAI account"
+        ]
+    else:
+        error_message = "Internal server error occurred."
+        suggestions = [
+            "Try refreshing the page or submitting your request again",
+            "Check your sitemap URL and make sure it's valid",
+            "Try a different sitemap URL",
+            "If the problem persists, please try again later"
+        ]
+    
+    return render_template('error.html', error=error_message, 
+                          error_type="Server Error", 
+                          suggestions=suggestions), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

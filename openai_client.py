@@ -16,20 +16,54 @@ if not OPENAI_API_KEY:
 USE_MOCK_DATA = False  
 
 # Define error classes for exception handling
-class APITimeoutError(Exception): pass
-class APIConnectionError(Exception): pass
-class RateLimitError(Exception): pass
+try:
+    # Try to import the OpenAI error classes directly
+    from openai.error import APITimeoutError, APIConnectionError, RateLimitError
+except ImportError:
+    # Fallback definitions if imports fail
+    class APITimeoutError(Exception): pass
+    class APIConnectionError(Exception): pass
+    class RateLimitError(Exception): pass
 
 # Initialize the OpenAI client
-from openai import OpenAI
-client = OpenAI(
-    api_key=OPENAI_API_KEY,
-    timeout=120.0,  # Longer timeout to prevent timeouts
-    max_retries=5  # More retries for reliability
-)
-logger.info("OpenAI client initialized successfully")
+try:
+    from openai import OpenAI, APIConnectionError as OpenAIAPIConnectionError, RateLimitError as OpenAIRateLimitError
+    client = OpenAI(
+        api_key=OPENAI_API_KEY,
+        timeout=120.0,  # Extended timeout for large sitemaps
+        max_retries=5  # More retries for reliability
+    )
+    logger.info("OpenAI client initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize OpenAI client: {str(e)}")
+    client = None
+    raise Exception(f"OpenAI client initialization failed: {str(e)}")
 
 # No mock clusters - the application exclusively uses the OpenAI API
+
+def test_openai_connection():
+    """
+    Test the OpenAI API connection with a simple request.
+    
+    Returns:
+        bool: True if connection successful, raises an exception otherwise
+    """
+    if not client:
+        raise Exception("OpenAI client not initialized")
+    
+    try:
+        logger.info("Testing OpenAI API connection")
+        # Make a simple request to test the connection
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": "Hello, this is a test"}],
+            max_tokens=5
+        )
+        logger.info("OpenAI API connection test successful")
+        return True
+    except Exception as e:
+        logger.error(f"OpenAI API connection test failed: {str(e)}")
+        raise Exception(f"Could not connect to OpenAI API: {str(e)}")
 
 def identify_topical_clusters(urls, sitemap_stats):
     """
@@ -118,7 +152,7 @@ def identify_topical_clusters(urls, sitemap_stats):
                     response_format={"type": "json_object"},
                     temperature=0.5,
                     max_tokens=2000,
-                    timeout=60  # 60 second timeout
+                    timeout=120  # 120 second timeout for large sitemap processing
                 )
                 
                 # Extract and parse the JSON response
