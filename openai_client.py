@@ -5,7 +5,8 @@ import time
 import socket
 import ssl
 import sys
-import requests  # Ensure requests is imported
+import re
+import requests  # For HTTP requests
 
 logger = logging.getLogger(__name__)
 
@@ -14,17 +15,19 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     logger.critical("OPENAI_API_KEY environment variable is not set - cannot continue")
     
-# Define error classes for OpenAI
+# Define error classes for OpenAI (used if import fails)
 class APITimeoutError(Exception): pass
 class APIConnectionError(Exception): pass
 class RateLimitError(Exception): pass
 
 # Import OpenAI and set up the client
+client = None
 try:
-    import requests
+    # Import the OpenAI library
     from openai import OpenAI
+    from openai.types.chat import ChatCompletion
     
-    # Try to get more specific error classes if available
+    # Try to get specific error classes if available
     try:
         from openai import APITimeoutError as OAITimeoutError
         from openai import APIConnectionError as OAIConnectionError
@@ -34,26 +37,28 @@ try:
         RateLimitError = OAIRateLimitError
     except ImportError:
         # Keep our generic ones defined above
-        pass
+        logger.warning("Could not import specific OpenAI error classes, using generic ones")
     
     # Initialize the OpenAI client with optimized settings
     if OPENAI_API_KEY and len(OPENAI_API_KEY) > 20:
         logger.info("Initializing OpenAI client with optimal settings")
         client = OpenAI(
             api_key=OPENAI_API_KEY,
-            timeout=60.0,  # 60 second timeout to avoid hanging
-            max_retries=3   # Built-in retries
+            timeout=30.0,  # 30 second timeout to avoid hanging
+            max_retries=2   # Built-in retries
         )
         
         logger.info("OpenAI client successfully initialized")
     else:
         logger.critical("Invalid OpenAI API key - application will not function correctly")
         # We still create a client but it won't work - the application will show a clear error
-        client = OpenAI(api_key="invalid_key_placeholder")
+        client = None
         
+except ImportError as e:
+    logger.critical(f"Could not import the OpenAI library: {e}")
+    client = None
 except Exception as e:
     logger.critical(f"Fatal error setting up OpenAI: {e}")
-    # This is a critical error - we can't proceed without OpenAI
     client = None
 
 # No mock data functions - we exclusively use OpenAI for real analysis
@@ -68,14 +73,24 @@ def identify_topical_clusters(urls, sitemap_stats):
         
     Returns:
         dict: Top 5 topical clusters with counts and examples
+        
+    Raises:
+        RuntimeError: If the OpenAI client is not available or API calls fail
+        ValueError: If the sitemap data is invalid
     """
     # Check if OpenAI client is available
     if not client:
-        logger.critical("OpenAI client is not initialized - cannot perform analysis")
-        raise RuntimeError("OpenAI API is not available. Please check your API key and try again.")
+        error_msg = "OpenAI client is not initialized - cannot perform analysis"
+        logger.critical(error_msg)
+        raise RuntimeError(f"OpenAI API is not available. Please check your API key and try again. Error: {error_msg}")
         
+    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
+        error_msg = "Invalid OpenAI API key - cannot perform analysis"
+        logger.critical(error_msg)
+        raise RuntimeError(f"OpenAI API key is invalid or missing. Please provide a valid API key. Error: {error_msg}")
+    
     # OpenAI analysis logic below
-    logger.info("Starting real OpenAI analysis of sitemap URLs")
+    logger.info(f"Starting OpenAI analysis of {len(urls[:100])} URLs from the sitemap")
     
     try:
         # Prepare the URL list for analysis
@@ -140,15 +155,15 @@ def identify_topical_clusters(urls, sitemap_stats):
                 
                 # Call the OpenAI API
                 response = client.chat.completions.create(
-                    model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+                    model="gpt-3.5-turbo",  # Use a more reliable model for this task
                     messages=[
                         {"role": "system", "content": "You are an SEO expert analyzing website sitemaps to identify topical clusters."},
                         {"role": "user", "content": prompt}
                     ],
                     response_format={"type": "json_object"},
-                    temperature=0.5,
-                    max_tokens=2000,
-                    timeout=60  # 60 second timeout
+                    temperature=0.3,  # Lower temperature for more consistent results
+                    max_tokens=1500,  # Slightly smaller response size
+                    timeout=30  # 30 second timeout for faster response
                 )
                 
                 # Extract and parse the JSON response
