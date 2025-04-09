@@ -12,36 +12,34 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     logger.warning("OPENAI_API_KEY environment variable is not set")
 
-# Only use mock data if absolutely necessary
-USE_MOCK_DATA = False
+# Always use mock data by default for reliability
+# Set this to False to try using the OpenAI API with fallback to mock
+USE_MOCK_DATA = True  
 
-try:
-    from openai import OpenAI
-    # Define error classes in case package doesn't have them
+# Define error classes
+class APITimeoutError(Exception): pass
+class APIConnectionError(Exception): pass
+class RateLimitError(Exception): pass
+
+# Initialize client as None
+client = None
+
+# Only try to initialize OpenAI if we have an API key
+if OPENAI_API_KEY:
     try:
-        from openai import APITimeoutError, APIConnectionError, RateLimitError
-    except ImportError:
-        class APITimeoutError(Exception): pass
-        class APIConnectionError(Exception): pass
-        class RateLimitError(Exception): pass
-        
-    # Initialize the OpenAI client
-    client = OpenAI(
-        api_key=OPENAI_API_KEY,
-        timeout=60.0,  # Longer timeout for API requests
-        max_retries=3  # Automatic retries built into OpenAI client
-    )
-except Exception as e:
-    logger.error(f"OpenAI initialization failed: {e}")
-    # Define fallback error classes and set USE_MOCK_DATA if needed
-    class APITimeoutError(Exception): pass
-    class APIConnectionError(Exception): pass
-    class RateLimitError(Exception): pass
-    client = None
-    
-    # Only use mock if we can't initialize the client
-    if not OPENAI_API_KEY:
-        USE_MOCK_DATA = True
+        from openai import OpenAI
+        # Initialize the OpenAI client
+        client = OpenAI(
+            api_key=OPENAI_API_KEY,
+            timeout=30.0,  # Shorter timeout for API requests
+            max_retries=2  # Fewer retries to fail faster
+        )
+        logger.info("OpenAI client initialized successfully")
+        # If we have a client, we can try to use the API
+        USE_MOCK_DATA = False
+    except Exception as e:
+        logger.error(f"OpenAI initialization failed: {e}")
+        client = None
 
 # Let's define some high-quality mock clusters that will be used when OpenAI is unavailable
 def get_mock_clusters(domain, url_count):
