@@ -24,8 +24,9 @@ def identify_topical_clusters(urls, sitemap_stats):
         dict: Top 5 topical clusters with counts and examples
     """
     try:
+        # Make sure we have a valid API key
         if not OPENAI_API_KEY:
-            logger.warning("OpenAI API key not found. Using mock data for demo.")
+            logger.error("OPENAI_API_KEY environment variable is not set")
             raise ValueError("OpenAI API key not provided. Please set the OPENAI_API_KEY environment variable.")
         
         # Prepare the URL list for analysis
@@ -150,8 +151,9 @@ def generate_blog_recommendations(clusters):
         dict: Updated clusters data with blog recommendations for each cluster
     """
     try:
+        # Make sure we have a valid API key
         if not OPENAI_API_KEY:
-            logger.warning("OpenAI API key not found. Cannot generate blog recommendations.")
+            logger.error("OPENAI_API_KEY environment variable is not set")
             raise ValueError("OpenAI API key not provided. Please set the OPENAI_API_KEY environment variable.")
         
         updated_clusters = clusters.copy()

@@ -98,25 +98,42 @@ def parse_sitemap(xml_content):
             'image': 'http://www.google.com/schemas/sitemap-image/1.1'
         }
         
-        # Handle WordPress HTML responses that contain XML data
-        if '<!DOCTYPE html>' in xml_content and ('<urlset' in xml_content or '<sitemapindex' in xml_content):
-            logger.debug("Detected HTML document with embedded XML, attempting to extract XML content")
+        # Handle WordPress HTML responses that contain XML data or are HTML without proper XML
+        if '<!DOCTYPE html>' in xml_content:
+            logger.debug("Detected HTML document, checking for embedded XML or structured sitemap data")
+            
             try:
-                # Try to extract just the XML part
+                # Try to extract just the XML part if present
                 if '<urlset' in xml_content:
                     start_idx = xml_content.find('<urlset')
                     end_idx = xml_content.find('</urlset>') + 9  # Include closing tag
-                    if start_idx > 0 and end_idx > start_idx:
+                    if start_idx >= 0 and end_idx > start_idx:
                         xml_content = xml_content[start_idx:end_idx]
                         logger.debug("Extracted <urlset> XML from HTML document")
                 elif '<sitemapindex' in xml_content:
                     start_idx = xml_content.find('<sitemapindex')
                     end_idx = xml_content.find('</sitemapindex>') + 14  # Include closing tag
-                    if start_idx > 0 and end_idx > start_idx:
+                    if start_idx >= 0 and end_idx > start_idx:
                         xml_content = xml_content[start_idx:end_idx]
                         logger.debug("Extracted <sitemapindex> XML from HTML document")
+                # Special case for WordPress sitemap index with broken XML
+                elif 'wp-sitemap' in xml_content and '<a href' in xml_content:
+                    logger.debug("Detected WordPress sitemap index HTML, extracting links")
+                    # Extract links from HTML content using regex
+                    import re
+                    links = re.findall(r'<a href="([^"]+)"', xml_content)
+                    sitemap_links = [link for link in links if ('sitemap' in link.lower() and link.endswith('.xml'))]
+                    
+                    if sitemap_links:
+                        logger.debug(f"Found {len(sitemap_links)} sitemap links in HTML content")
+                        # Create a simple XML sitemap index from the links
+                        xml_content = '<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                        for link in sitemap_links:
+                            xml_content += f'<sitemap><loc>{link}</loc></sitemap>'
+                        xml_content += '</sitemapindex>'
+                        logger.debug("Created sitemap index from HTML links")
             except Exception as e:
-                logger.warning(f"Failed to extract XML from HTML: {e}")
+                logger.warning(f"Failed to extract XML or links from HTML: {e}")
 
         # Add XML declaration if missing
         if not xml_content.strip().startswith('<?xml'):

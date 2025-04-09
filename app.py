@@ -66,7 +66,9 @@ def analyze():
             try:
                 # Just attempt to fetch, don't need to parse yet
                 test_content = fetch_sitemap(test_url)
-                if test_content and '<urlset' in test_content or '<sitemapindex' in test_content:
+                # Check for either XML sitemap patterns or HTML containing links to sitemaps
+                if (test_content and ('<urlset' in test_content or '<sitemapindex' in test_content)) or \
+                   (test_content and '<!DOCTYPE html>' in test_content and ('wp-sitemap' in test_content or 'sitemap_index' in test_content)):
                     sitemap_url = test_url
                     logger.info(f"Found valid WordPress sitemap at: {sitemap_url}")
                     break

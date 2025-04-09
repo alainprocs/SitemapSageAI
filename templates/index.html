@@ -230,9 +230,9 @@
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" id="submit-button" class="btn btn-lg" style="background-color: white; color: black; border-radius: 2rem; padding: 0.8rem 2rem; font-weight: normal; font-size: 0.95rem; transition: all 0.2s;">
-                                <span class="button-text">Analyze Sitemap</span>
-                                <i class="fas fa-chart-network ms-2"></i>
+                            <button type="submit" id="submit-button" class="btn btn-lg" style="background-color: #333; color: white !important; border-radius: 2rem; padding: 0.8rem 2rem; font-weight: normal; font-size: 0.95rem; transition: all 0.2s; border: 1px solid rgba(255, 255, 255, 0.2);">
+                                <span class="button-text" style="color: white !important;">Analyze Sitemap</span>
+                                <i class="fas fa-chart-network ms-2" style="color: white !important;"></i>
                                 <span id="loading-indicator" class="spinner-border spinner-border-sm d-none ms-2" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
@@ -241,11 +241,11 @@
                                 const submitButton = document.getElementById('submit-button');
                                 
                                 submitButton.addEventListener('mouseover', function() {
-                                    this.style.backgroundColor = '#f8f9fa';
+                                    this.style.backgroundColor = '#444';
                                 });
                                 
                                 submitButton.addEventListener('mouseout', function() {
-                                    this.style.backgroundColor = 'white';
+                                    this.style.backgroundColor = '#333';
                                 });
                             });
                         </script>
