@@ -126,15 +126,16 @@
                             <h5 class="mt-4"><i class="fas fa-lightbulb text-warning me-2"></i>Recommended Blog Article Ideas:</h5>
                             <div class="article-ideas mt-3">
                                 {% if cluster.article_ideas %}
-                                    <div class="accordion" id="articleIdeas{{ loop.index }}">
+                                    <div class="accordion" id="articleIdeas-cluster{{ loop.index }}">
                                         {% for idea in cluster.article_ideas %}
+                                            {% set idea_index = loop.index %}
                                             <div class="accordion-item bg-dark">
                                                 <h2 class="accordion-header">
-                                                    <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#idea{{ loop.parent.loop.index }}_{{ loop.index }}" aria-expanded="false">
+                                                    <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#cluster{{ loop.parent.loop.index }}-idea{{ idea_index }}" aria-expanded="false">
                                                         <i class="fas fa-pen-fancy text-info me-2"></i>{{ idea.headline }}
                                                     </button>
                                                 </h2>
-                                                <div id="idea{{ loop.parent.loop.index }}_{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#articleIdeas{{ loop.parent.loop.index }}">
+                                                <div id="cluster{{ loop.parent.loop.index }}-idea{{ idea_index }}" class="accordion-collapse collapse" data-bs-parent="#articleIdeas-cluster{{ loop.parent.loop.index }}">
                                                     <div class="accordion-body">
                                                         <p>{{ idea.description }}</p>
                                                     </div>
