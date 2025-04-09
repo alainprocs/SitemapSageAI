@@ -20,7 +20,7 @@
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h1 class="mb-2" style="font-weight: 700;">SEO Topical Cluster Analysis</h1>
-                    <p class="lead mb-0">Results for: <span class="text-info">{{ sitemap_url }}</span></p>
+                    <p class="lead mb-0">Results for: <span style="color: rgba(255, 255, 255, 0.9);">{{ sitemap_url }}</span></p>
                 </div>
                 <div class="col-md-4 text-end">
                     <a href="{{ url_for('index') }}" class="btn btn-outline-light">
@@ -34,7 +34,7 @@
     <main class="container py-5">
         <!-- Site Stats Section with Modern Cards -->
         <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-chart-bar text-info me-2"></i>Sitemap Statistics</h2>
+            <h2 class="mb-4"><i class="fas fa-chart-bar me-2" style="color: rgba(255, 255, 255, 0.8);"></i>Sitemap Statistics</h2>
             <div class="row g-4">
                 <div class="col-md-3">
                     <div class="stat-card card">
@@ -65,7 +65,7 @@
 
         <!-- Visualization Section with Modern Charts -->
         <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-chart-pie text-info me-2"></i>Cluster Visualization</h2>
+            <h2 class="mb-4"><i class="fas fa-chart-pie me-2" style="color: rgba(255, 255, 255, 0.8);"></i>Cluster Visualization</h2>
             <div class="row g-4">
                 <div class="col-lg-6">
                     <div class="card">
@@ -97,7 +97,7 @@
         <!-- Top Clusters Section with Animated Text -->
         <section class="mb-5">
             <div class="d-flex align-items-center mb-4">
-                <i class="fas fa-sitemap text-info me-2 fa-lg"></i>
+                <i class="fas fa-sitemap me-2 fa-lg" style="color: rgba(255, 255, 255, 0.8);"></i>
                 <h2 class="mb-0">Top {{ clusters.clusters|length }} SEO Topical Clusters</h2>
             </div>
             
@@ -107,14 +107,14 @@
                     <div class="cluster-card card">
                         <div class="card-body">
                             <h3 class="cluster-title">{{ cluster.title }}</h3>
-                            <div class="badge bg-info mb-3">{{ cluster.count }} URLs</div>
+                            <div class="badge mb-3" style="background-color: #2a2a2a; color: white;">{{ cluster.count }} URLs</div>
                             
                             <p>{{ cluster.description }}</p>
                             
-                            <h5 class="mt-4 text-info">SEO Significance:</h5>
+                            <h5 class="mt-4" style="color: rgba(255, 255, 255, 0.9);">SEO Significance:</h5>
                             <p>{{ cluster.seo_significance }}</p>
                             
-                            <h5 class="mt-4 text-info">Example URLs:</h5>
+                            <h5 class="mt-4" style="color: rgba(255, 255, 255, 0.9);">Example URLs:</h5>
                             <div class="list-group mb-3">
                                 {% for example in cluster.examples %}
                                 <div class="example-url mb-2">
@@ -125,6 +125,30 @@
                                 </div>
                                 {% endfor %}
                             </div>
+                            
+                            {% if cluster.blog_recommendations is defined and cluster.blog_recommendations %}
+                            <div class="mt-4">
+                                <h5 style="color: rgba(255, 255, 255, 0.9);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="rgba(255, 255, 255, 0.8)" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
+                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                    </svg>
+                                    Blog Recommendations:
+                                </h5>
+                                <div class="list-group">
+                                    {% for recommendation in cluster.blog_recommendations %}
+                                    <div class="recommendation-item p-3 mb-2" style="background-color: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                                        <h6 class="recommendation-title mb-2">{{ recommendation.title }}</h6>
+                                        <p class="mb-2 small">{{ recommendation.description }}</p>
+                                        <div class="seo-benefit small">
+                                            <span class="fw-medium" style="color: rgba(255, 255, 255, 0.7);">SEO Benefit:</span> 
+                                            <span class="fst-italic" style="color: rgba(255, 255, 255, 0.7);">{{ recommendation.seo_benefit }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -134,17 +158,17 @@
 
         <!-- Recommendations Section with Modern Design -->
         <section class="mb-5">
-            <h2 class="mb-4"><i class="fas fa-lightbulb text-warning me-2"></i>SEO Recommendations</h2>
+            <h2 class="mb-4"><i class="fas fa-lightbulb me-2" style="color: rgba(255, 255, 255, 0.8);"></i>SEO Recommendations</h2>
             <div class="card">
                 <div class="card-body p-4">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="d-flex mb-3">
                                 <div class="me-3">
-                                    <i class="fas fa-sitemap fa-2x text-info"></i>
+                                    <i class="fas fa-sitemap fa-2x" style="color: rgba(255, 255, 255, 0.8);"></i>
                                 </div>
                                 <div>
-                                    <h5 class="text-info">Strengthen Your Clusters</h5>
+                                    <h5 style="color: rgba(255, 255, 255, 0.9);">Strengthen Your Clusters</h5>
                                 </div>
                             </div>
                             <ul class="recommendation-list">
@@ -158,10 +182,10 @@
                         <div class="col-md-6">
                             <div class="d-flex mb-3">
                                 <div class="me-3">
-                                    <i class="fas fa-file-alt fa-2x text-info"></i>
+                                    <i class="fas fa-file-alt fa-2x" style="color: rgba(255, 255, 255, 0.8);"></i>
                                 </div>
                                 <div>
-                                    <h5 class="text-info">Optimize Your Content</h5>
+                                    <h5 style="color: rgba(255, 255, 255, 0.9);">Optimize Your Content</h5>
                                 </div>
                             </div>
                             <ul class="recommendation-list">
@@ -176,7 +200,7 @@
                     
                     <!-- Call to Action Button -->
                     <div class="text-center mt-4">
-                        <button class="btn btn-info" disabled>
+                        <button class="btn" style="background-color: #2a2a2a; color: white; border: 1px solid rgba(255, 255, 255, 0.2);" disabled>
                             <i class="fas fa-download me-2"></i>Download Full Report
                         </button>
                         <p class="small text-secondary mt-2">Premium feature coming soon</p>
@@ -187,7 +211,7 @@
         
         <!-- Share Results Section -->
         <section class="mb-5">
-            <div class="card" style="background: linear-gradient(120deg, #1d1d1d, #242424); border-color: rgba(54, 162, 235, 0.2);">
+            <div class="card" style="background: linear-gradient(120deg, #1d1d1d, #242424); border-color: rgba(255, 255, 255, 0.1);">
                 <div class="card-body p-4">
                     <div class="row align-items-center">
                         <div class="col-md-7">
@@ -198,7 +222,7 @@
                             <button class="btn btn-outline-light me-2 mb-2 mb-md-0" disabled>
                                 <i class="fas fa-envelope me-2"></i>Email
                             </button>
-                            <button class="btn btn-outline-primary mb-2 mb-md-0" disabled>
+                            <button class="btn" style="border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.8);" disabled>
                                 <i class="fas fa-link me-2"></i>Copy Link
                             </button>
                         </div>
@@ -212,9 +236,9 @@
     <footer class="footer">
         <div class="container text-center">
             <div class="mb-3">
-                <i class="fas fa-sitemap text-info me-2"></i>
-                <i class="fas fa-chart-pie text-primary me-2"></i>
-                <i class="fas fa-robot text-warning"></i>
+                <i class="fas fa-sitemap me-2" style="color: rgba(255, 255, 255, 0.8);"></i>
+                <i class="fas fa-chart-pie me-2" style="color: rgba(255, 255, 255, 0.8);"></i>
+                <i class="fas fa-robot" style="color: rgba(255, 255, 255, 0.8);"></i>
             </div>
             <p class="mb-1">SEO Topical Cluster Analyzer using OpenAI</p>
             <p class="small text-secondary">Analyze your website structure for better SEO performance</p>

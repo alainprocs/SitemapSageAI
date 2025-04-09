@@ -2,7 +2,7 @@ import os
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from sitemap_analyzer import fetch_sitemap, parse_sitemap, analyze_sitemap_structure
-from openai_client import identify_topical_clusters
+from openai_client import identify_topical_clusters, generate_blog_recommendations
 
 # Set up logging for debugging
 logging.basicConfig(level=logging.DEBUG)
@@ -94,7 +94,13 @@ def analyze():
         logger.info("Identifying topical clusters with OpenAI")
         try:
             clusters = identify_topical_clusters(urls, sitemap_stats)
-            logger.info(f"Identified {len(clusters)} topical clusters")
+            logger.info(f"Identified {len(clusters['clusters'])} topical clusters")
+            
+            # Generate blog post recommendations for each cluster
+            logger.info("Generating blog post recommendations for each cluster")
+            clusters_with_recommendations = generate_blog_recommendations(clusters)
+            clusters = clusters_with_recommendations
+            
         except Exception as ai_error:
             logger.error(f"Error with OpenAI API: {str(ai_error)}")
             flash(f'Error identifying topical clusters: {str(ai_error)}. Check API key and try again.', 'danger')

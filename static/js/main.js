@@ -70,7 +70,8 @@ function initializeTextAnimations() {
         badges: document.querySelectorAll('.badge'),
         headings: document.querySelectorAll('.cluster-card h5'),
         urls: document.querySelectorAll('.example-url'),
-        recommendationItems: document.querySelectorAll('.recommendation-list li')
+        recommendationItems: document.querySelectorAll('.recommendation-list li'),
+        blogRecommendations: document.querySelectorAll('.recommendation-item')
     };
     
     // Initial setup for animations
@@ -86,6 +87,7 @@ function initializeTextAnimations() {
     startFadeInAnimations(animationElements.headings, estimatedBaseDelay + 2000);
     startURLAnimations(animationElements.urls, estimatedBaseDelay + 2500);
     startSequentialFadeIn(animationElements.recommendationItems, estimatedBaseDelay + 3000);
+    startSequentialFadeIn(animationElements.blogRecommendations, estimatedBaseDelay + 3500);
 }
 
 // Set up elements for animation
@@ -101,7 +103,7 @@ function setupElementsForAnimation(elements) {
     });
     
     // Prepare badges, headings and URLs for fade-in animation
-    [...elements.badges, ...elements.headings, ...elements.urls, ...elements.recommendationItems].forEach(element => {
+    [...elements.badges, ...elements.headings, ...elements.urls, ...elements.recommendationItems, ...elements.blogRecommendations].forEach(element => {
         element.style.opacity = 0;
         element.style.transform = 'translateY(15px)';
         element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -170,8 +172,8 @@ function startFadeInAnimations(elements, baseDelay) {
 function startURLAnimations(elements, baseDelay) {
     elements.forEach((url, index) => {
         setTimeout(() => {
-            // Quick flash effect before fade in
-            url.style.backgroundColor = 'rgba(54, 162, 235, 0.2)';
+            // Quick flash effect before fade in (monochrome theme)
+            url.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
             
             // Then fade in
             setTimeout(() => {
@@ -195,8 +197,8 @@ function startSequentialFadeIn(elements, baseDelay) {
             element.style.opacity = 1;
             element.style.transform = 'translateY(0)';
             
-            // Add a subtle highlight effect
-            element.style.backgroundColor = 'rgba(54, 162, 235, 0.1)';
+            // Add a subtle highlight effect for monochrome theme
+            element.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
             setTimeout(() => {
                 element.style.backgroundColor = 'transparent';
             }, 500);
@@ -255,16 +257,16 @@ function initializeClusterChart() {
         
         console.log('Prepared chart data:', { titles, counts });
         
-        // Ensure we have enough colors (handle more than 5 clusters if needed)
+        // Monochrome theme colors (shades of gray)
         const backgroundColors = [
-            'rgba(75, 192, 192, 0.8)',
-            'rgba(54, 162, 235, 0.8)',
-            'rgba(153, 102, 255, 0.8)',
-            'rgba(255, 206, 86, 0.8)',
-            'rgba(255, 99, 132, 0.8)',
-            'rgba(255, 159, 64, 0.8)',
-            'rgba(201, 203, 207, 0.8)',
-            'rgba(0, 162, 151, 0.8)'
+            'rgba(220, 220, 220, 0.8)',
+            'rgba(190, 190, 190, 0.8)',
+            'rgba(160, 160, 160, 0.8)',
+            'rgba(130, 130, 130, 0.8)',
+            'rgba(100, 100, 100, 0.8)',
+            'rgba(70, 70, 70, 0.8)',
+            'rgba(50, 50, 50, 0.8)',
+            'rgba(30, 30, 30, 0.8)'
         ];
         
         const borderColors = backgroundColors.map(color => color.replace('0.8', '1'));
@@ -344,8 +346,8 @@ function initializeClusterChart() {
                 datasets: [{
                     label: 'URLs',
                     data: depthCounts,
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(180, 180, 180, 0.8)',
+                    borderColor: 'rgba(180, 180, 180, 1)',
                     borderWidth: 1
                 }]
             },

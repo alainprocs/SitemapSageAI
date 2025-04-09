@@ -138,3 +138,96 @@ def identify_topical_clusters(urls, sitemap_stats):
     except Exception as e:
         logger.error(f"Error in OpenAI analysis: {str(e)}")
         raise Exception(f"Failed to analyze sitemap with OpenAI: {str(e)}")
+
+def generate_blog_recommendations(clusters):
+    """
+    Generate 3 blog post recommendations for each topical cluster based on SEO gaps.
+    
+    Args:
+        clusters (dict): Dictionary containing clusters data
+        
+    Returns:
+        dict: Updated clusters data with blog recommendations for each cluster
+    """
+    try:
+        if not OPENAI_API_KEY:
+            logger.warning("OpenAI API key not found. Cannot generate blog recommendations.")
+            raise ValueError("OpenAI API key not provided. Please set the OPENAI_API_KEY environment variable.")
+        
+        updated_clusters = clusters.copy()
+        
+        # Process each cluster to add blog recommendations
+        for cluster in updated_clusters['clusters']:
+            cluster_title = cluster['title']
+            cluster_description = cluster['description']
+            example_urls = cluster['examples']
+            
+            # Create a prompt for blog recommendations
+            prompt = f"""
+            I need to generate 3 strategic blog post ideas for a topical cluster on a website.
+
+            Cluster title: {cluster_title}
+            Cluster description: {cluster_description}
+            Current URLs in this cluster:
+            {json.dumps(example_urls, indent=2)}
+            
+            Please suggest 3 blog post ideas that:
+            1. Fill gaps in the current content
+            2. Target valuable SEO keywords related to this topic
+            3. Complement the existing content without duplicating it
+            4. Are specific, actionable, and have clear value for the audience
+            5. Follow best SEO practices for content creation
+            
+            For each blog post idea, provide:
+            1. An SEO-optimized title (65 characters max)
+            2. A brief description of what the post should cover
+            3. The main SEO benefit of publishing this content
+            
+            Respond with JSON in the following format:
+            {{
+                "recommendations": [
+                    {{
+                        "title": "Blog post title",
+                        "description": "What this post should cover",
+                        "seo_benefit": "The main SEO benefit"
+                    }},
+                    ...
+                ]
+            }}
+            
+            Ensure the recommendations are highly relevant to the specific cluster.
+            """
+            
+            # Call the OpenAI API to generate recommendations
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are an SEO content strategist helping website owners identify gaps in their content."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
+            # Extract and parse the JSON response
+            content = response.choices[0].message.content
+            recommendations_data = json.loads(content)
+            
+            # Add recommendations to the cluster
+            if 'recommendations' in recommendations_data and isinstance(recommendations_data['recommendations'], list):
+                cluster['blog_recommendations'] = recommendations_data['recommendations']
+            else:
+                cluster['blog_recommendations'] = []
+            
+        logger.info(f"Successfully generated blog recommendations for {len(updated_clusters['clusters'])} clusters")
+        return updated_clusters
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON response for blog recommendations: {str(e)}")
+        logger.debug(f"Raw response: {content}")
+        raise Exception("Invalid response format from OpenAI")
+    
+    except Exception as e:
+        logger.error(f"Error generating blog recommendations: {str(e)}")
+        raise Exception(f"Failed to generate blog recommendations: {str(e)}")
