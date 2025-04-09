@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEO Cluster Analysis</title>
-    <!-- Inter Font -->
+    <!-- Geist Font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,40 +14,78 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body class="modern-ui">
-    <div class="container">
-        <header>
-            <h1>SEO Cluster Analysis</h1>
-        </header>
-
-        <main>
-            <div class="hero-section">
-                <div class="card">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert {{ category }}">{{ message }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
+    <!-- Hero Section -->
+    <div class="hero-section-container">
+        <!-- Background gradient -->
+        <div class="hero-bg-gradient"></div>
+        
+        <!-- Grid Animation -->
+        <div class="retro-grid">
+            <div class="grid-inner">
+                <div class="grid-lines"></div>
+            </div>
+            <div class="grid-fade"></div>
+        </div>
+        
+        <div class="hero-content">
+            <!-- Small tag at top -->
+            <div class="hero-tag">
+                <span>SEO Analysis Tool</span>
+                <i data-lucide="chevron-right" class="tag-icon"></i>
+            </div>
+            
+            <!-- Main heading -->
+            <h1 class="hero-title">
+                <span class="title-regular">Discover your website's </span>
+                <span class="title-gradient">topical clusters</span>
+            </h1>
+            
+            <!-- Description -->
+            <p class="hero-description">
+                Our AI-powered tool analyzes your sitemap to identify key topic clusters, 
+                helping you optimize your content strategy and improve SEO performance.
+            </p>
+            
+            <!-- CTA Section with form -->
+            <div class="cta-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post" class="hero-form">
+                    <div class="input-container">
+                        <i data-lucide="globe" class="input-icon"></i>
+                        <input 
+                            type="text" 
+                            id="sitemap_url" 
+                            name="sitemap_url" 
+                            placeholder="Enter your sitemap URL (e.g., example.com/sitemap.xml)" 
+                            required
+                            class="hero-input"
+                        >
+                    </div>
                     
-                    <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post">
-                        <div class="form-group">
-                            <label for="sitemap_url">Enter your sitemap URL</label>
-                            <div class="input-wrapper">
-                                <i data-lucide="globe"></i>
-                                <input type="text" id="sitemap_url" name="sitemap_url" 
-                                       placeholder="example.com/sitemap.xml" required>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" id="submit-button" class="button">
+                    <div class="cta-button-wrapper">
+                        <span class="button-glow"></span>
+                        <button type="submit" id="submit-button" class="hero-button">
                             <span>Analyze Sitemap</span>
                             <span id="loading-indicator" class="spinner-loader hidden"></span>
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
-        </main>
+            
+            <!-- Example image -->
+            <div class="hero-image">
+                <img src="{{ url_for('static', filename='images/seo-report-dark.svg') }}" 
+                     alt="SEO Cluster Analysis Report" 
+                     class="dashboard-preview">
+            </div>
+        </div>
     </div>
 
     <!-- Custom JavaScript -->
