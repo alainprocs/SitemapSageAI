@@ -135,7 +135,7 @@
         </section>
 
         <!-- Input Form Section with Modern Design -->
-        <section class="my-5">
+        <section id="analyze" class="my-5">
             <div class="card">
                 <div class="card-body">
                     <h2 class="card-title mb-4"><i class="fas fa-search text-info me-2"></i>Analyze Your Sitemap</h2>
@@ -169,12 +169,25 @@
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" id="submit-button" class="btn btn-primary btn-lg" style="border-radius: 1.5rem; padding: 0.8rem 2rem;">
+                            <button type="submit" id="submit-button" class="btn btn-lg" style="background-color: white; color: black; border-radius: 2rem; padding: 0.8rem 2rem; font-weight: normal; font-size: 0.95rem; transition: all 0.2s;">
                                 <span class="button-text">Analyze Sitemap</span>
                                 <i class="fas fa-chart-network ms-2"></i>
                                 <span id="loading-indicator" class="spinner-border spinner-border-sm d-none ms-2" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const submitButton = document.getElementById('submit-button');
+                                
+                                submitButton.addEventListener('mouseover', function() {
+                                    this.style.backgroundColor = '#f8f9fa';
+                                });
+                                
+                                submitButton.addEventListener('mouseout', function() {
+                                    this.style.backgroundColor = 'white';
+                                });
+                            });
+                        </script>
                     </form>
                 </div>
             </div>
@@ -244,30 +257,85 @@
             </div>
         </section>
         
-        <!-- New Feature Highlight Section -->
+        <!-- Jul.chat-style Notification Card -->
         <section class="my-5">
-            <div class="card" style="background: linear-gradient(120deg, #1d1d1d, #242424); border-color: rgba(54, 162, 235, 0.2);">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-7">
-                            <h2 class="card-title mb-3">
-                                <i class="fas fa-sparkles text-warning me-2"></i>New Feature: Text Streaming
-                            </h2>
-                            <p>We've added a new text streaming feature that animates the analysis results as they appear. This makes it easier to follow the information as it loads, creating a more engaging user experience.</p>
-                            <div class="mt-4">
-                                <button class="btn btn-outline-info" disabled>
-                                    <span class="animate-text">See it in action in the results page...</span>
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card" style="border-radius: 1.5rem; background-color: #1d1d1d; border: none;">
+                        <div class="card-body text-center p-4">
+                            <h2 class="mb-2 fw-medium">SEO Topical Cluster Analysis</h2>
+                            <p class="mb-4" style="color: rgba(255, 255, 255, 0.6);">
+                                Analyze your website's content structure.
+                                <br>
+                                Powered by OpenAI's intelligent categorization.
+                                <br>
+                                <a href="#analyze" class="text-white text-decoration-none">Learn more</a>
+                            </p>
+                            <div class="d-flex gap-3">
+                                <button class="btn flex-grow-1 py-2" style="background-color: #242424; color: white; border-radius: 2rem; font-weight: normal; font-size: 0.875rem; transition: all 0.2s;">
+                                    Not now
+                                </button>
+                                <button class="btn flex-grow-1 py-2" style="background-color: white; color: black; border-radius: 2rem; font-weight: normal; font-size: 0.875rem; transition: all 0.2s;" onclick="document.getElementById('sitemap_url').focus();">
+                                    Explore
                                 </button>
                             </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const buttons = document.querySelectorAll('.d-flex.gap-3 .btn');
+                                    
+                                    buttons.forEach(button => {
+                                        button.addEventListener('mouseover', function() {
+                                            if (this.style.backgroundColor === 'white' || this.style.backgroundColor === 'rgb(255, 255, 255)') {
+                                                this.style.backgroundColor = '#f8f9fa';
+                                            } else {
+                                                this.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                                            }
+                                        });
+                                        
+                                        button.addEventListener('mouseout', function() {
+                                            if (this.style.backgroundColor === '#f8f9fa') {
+                                                this.style.backgroundColor = 'white';
+                                            } else {
+                                                this.style.backgroundColor = '#242424';
+                                            }
+                                        });
+                                    });
+                                });
+                            </script>
                         </div>
-                        <div class="col-lg-5 text-center mt-4 mt-lg-0">
-                            <div class="feature-illustration">
-                                <i class="fas fa-terminal fa-3x text-info mb-3"></i>
-                                <div class="typing-animation">
-                                    <div class="typing-line" style="width: 70%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
-                                    <div class="typing-line" style="width: 40%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
-                                    <div class="typing-line" style="width: 80%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
-                                    <div class="typing-cursor" style="height: 20px; width: 3px; background-color: var(--bs-info); animation: blink-caret 0.75s step-end infinite;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- New Feature Highlight Section -->
+        <section class="my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card" style="background: #1d1d1d; border: none;">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-lg-7">
+                                    <h2 class="card-title mb-3">
+                                        New Feature: Text Streaming
+                                    </h2>
+                                    <p style="color: rgba(255, 255, 255, 0.6);">We've added a new text streaming feature that animates the analysis results as they appear. This makes it easier to follow the information as it loads, creating a more engaging user experience.</p>
+                                    <div class="mt-4">
+                                        <button class="btn" style="background-color: #242424; color: white; border-radius: 2rem;" disabled>
+                                            <span class="animate-text">See it in action in the results page...</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5 text-center mt-4 mt-lg-0">
+                                    <div class="feature-illustration">
+                                        <i class="fas fa-terminal fa-3x mb-3"></i>
+                                        <div class="typing-animation">
+                                            <div class="typing-line" style="width: 70%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
+                                            <div class="typing-line" style="width: 40%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
+                                            <div class="typing-line" style="width: 80%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
+                                            <div class="typing-cursor" style="height: 20px; width: 3px; background-color: white; animation: blink-caret 0.75s step-end infinite;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-/* Custom styles to complement Bootstrap - Inspired by modern UI design */
+/* Custom styles to complement Bootstrap - Inspired by the Jul.chat UI */
 
 :root {
     --card-radius: 1.5rem;
@@ -7,17 +7,44 @@
     --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     --card-bg: #1d1d1d;
     --card-border: 1px solid rgba(255, 255, 255, 0.05);
-    --highlight-color: var(--bs-info);
-    --secondary-highlight: var(--bs-secondary);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --btn-primary-bg: #ffffff;
+    --btn-primary-text: #000000;
+    --btn-secondary-bg: #242424;
+    --btn-secondary-text: #ffffff;
+    --section-bg: #111111;
+    --highlight-color: #ffffff;
 }
 
-/* Global styles */
+/* Global styles - Based on Jul.chat UI */
 body {
     overflow-x: hidden;
+    background-color: #000000;
+    color: var(--text-primary);
 }
 
 .container {
     padding: 0 1.5rem;
+}
+
+/* Base text color overrides */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+}
+
+p, .text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
 }
 
 /* Modern Cards */
@@ -48,26 +75,44 @@ body {
     position: relative;
 }
 
-/* Custom button styles */
+/* Custom button styles - Based on Jul.chat UI */
 .btn {
     border-radius: 2rem;
     padding: 0.5rem 1.5rem;
     font-weight: 500;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
+    border: none;
 }
 
-.btn-primary, .btn-info {
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.btn-primary {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
     font-size: 0.875rem;
 }
 
+.btn-primary:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    font-size: 0.875rem;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
 .btn-outline-light {
-    border-width: 1.5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: transparent;
 }
 
 .btn-outline-light:hover {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Loading spinner */
