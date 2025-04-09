@@ -19,16 +19,19 @@ request_counter = {}
 @app.route('/')
 def index():
     """Render the main page with the sitemap URL input form."""
-    # Check if OpenAI API key is configured
+    # Show warning if OpenAI API key is not properly configured
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        flash('Warning: OpenAI API key is not set up. Analysis will use sample data instead.', 'warning')
+        flash('Error: OpenAI API key is required for this application. Please set up your API key.', 'danger')
     elif api_key.startswith(('sk_test_', 'sk_live_')):
-        flash('Warning: Your OpenAI API key appears to be a Stripe key, not an OpenAI key. Please check your environment variables.', 'warning')
+        flash('Error: Your OpenAI API key appears to be a Stripe key, not an OpenAI key. Please check your environment variables.', 'danger')
     elif len(api_key) < 20:  # OpenAI keys are typically longer
-        flash('Warning: Your OpenAI API key appears to be invalid. Please check your environment variables.', 'warning')
+        flash('Error: Your OpenAI API key appears to be invalid. Please check your environment variables.', 'danger')
+    else:
+        # Let the user know they're ready to analyze with OpenAI
+        flash('Ready to analyze your sitemap using OpenAI for topical clustering.', 'info')
     
-    # Display warning for deployed environment
+    # Display info for deployed environment
     if os.environ.get("REPLIT_DEPLOYMENT") == "1":
         flash('Important: For deployment, ensure your OpenAI API key is correctly set in your project secrets.', 'info')
     
@@ -40,14 +43,17 @@ def analyze():
     # Check if OpenAI API key is configured and appears valid
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        logger.warning("OPENAI_API_KEY environment variable is not set")
-        flash('OpenAI API key is not configured. Analysis will use sample data instead.', 'warning')
+        logger.critical("OPENAI_API_KEY environment variable is not set")
+        flash('Error: OpenAI API key is required for this application. Please set up your API key.', 'danger')
+        return redirect(url_for('index'))
     elif api_key.startswith(('sk_test_', 'sk_live_')):
-        logger.warning("Invalid API key format (looks like a Stripe key)")
-        flash('Your OpenAI API key appears to be a Stripe key, not an OpenAI key.', 'warning')
+        logger.critical("Invalid API key format (looks like a Stripe key)")
+        flash('Error: Your OpenAI API key appears to be a Stripe key, not an OpenAI key.', 'danger')
+        return redirect(url_for('index'))
     elif len(api_key) < 20:  # OpenAI keys are typically longer
-        logger.warning("API key appears too short to be valid")
-        flash('Your OpenAI API key appears to be invalid (too short).', 'warning')
+        logger.critical("API key appears too short to be valid")
+        flash('Error: Your OpenAI API key appears to be invalid (too short).', 'danger')
+        return redirect(url_for('index'))
     
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
@@ -115,14 +121,14 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
-        # Use OpenAI to identify topical clusters (or fall back to mock data if needed)
-        logger.info("Identifying topical clusters with OpenAI if available")
+        # Use OpenAI to identify topical clusters
+        logger.info("Identifying topical clusters with OpenAI")
         try:
             clusters = identify_topical_clusters(urls, sitemap_stats)
             logger.info(f"Identified {len(clusters.get('clusters', []))} topical clusters")
             
-            # Tell user their results are ready
-            flash('SEO analysis complete! Your topical cluster results are ready.', 'success')
+            # Tell user real AI analysis is complete
+            flash('SEO analysis complete! Your topical clusters have been identified by OpenAI.', 'success')
             
         except Exception as ai_error:
             logger.error(f"Error generating clusters: {str(ai_error)}")
