@@ -98,6 +98,31 @@ def parse_sitemap(xml_content):
             'image': 'http://www.google.com/schemas/sitemap-image/1.1'
         }
         
+        # Handle WordPress HTML responses that contain XML data
+        if '<!DOCTYPE html>' in xml_content and ('<urlset' in xml_content or '<sitemapindex' in xml_content):
+            logger.debug("Detected HTML document with embedded XML, attempting to extract XML content")
+            try:
+                # Try to extract just the XML part
+                if '<urlset' in xml_content:
+                    start_idx = xml_content.find('<urlset')
+                    end_idx = xml_content.find('</urlset>') + 9  # Include closing tag
+                    if start_idx > 0 and end_idx > start_idx:
+                        xml_content = xml_content[start_idx:end_idx]
+                        logger.debug("Extracted <urlset> XML from HTML document")
+                elif '<sitemapindex' in xml_content:
+                    start_idx = xml_content.find('<sitemapindex')
+                    end_idx = xml_content.find('</sitemapindex>') + 14  # Include closing tag
+                    if start_idx > 0 and end_idx > start_idx:
+                        xml_content = xml_content[start_idx:end_idx]
+                        logger.debug("Extracted <sitemapindex> XML from HTML document")
+            except Exception as e:
+                logger.warning(f"Failed to extract XML from HTML: {e}")
+
+        # Add XML declaration if missing
+        if not xml_content.strip().startswith('<?xml'):
+            xml_content = '<?xml version="1.0" encoding="UTF-8"?>' + xml_content
+            logger.debug("Added XML declaration")
+                
         # Clean up potentially problematic XML declarations
         if '<?xml' in xml_content and '?>' in xml_content:
             # Keep only the first XML declaration to avoid parsing errors
@@ -148,8 +173,8 @@ def parse_sitemap(xml_content):
                 except Exception as e:
                     logger.warning(f"Error finding sitemap elements with path {path}: {e}")
             
-            # Process found sitemap elements (limit to 3 for demo purposes)
-            for sitemap_element in sitemap_elements[:3]:
+            # Process found sitemap elements (limit to 10 to get enough URLs)
+            for sitemap_element in sitemap_elements[:10]:
                 # Try different methods to find loc element
                 loc_text = None
                 for loc_path in ["sm:loc", "loc", f"{ns}loc"]:

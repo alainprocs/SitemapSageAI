@@ -37,6 +37,43 @@ def analyze():
         sitemap_url = 'https://' + sitemap_url
         logger.info(f"Added https:// prefix, URL is now: {sitemap_url}")
     
+    # If URL doesn't end with .xml or doesn't contain sitemap, it might be just the domain
+    # Try to append common WordPress sitemap paths
+    from urllib.parse import urlparse
+    parsed_url = urlparse(sitemap_url)
+    is_domain_only = not parsed_url.path or parsed_url.path == '/'
+    is_not_sitemap = not (parsed_url.path.endswith('.xml') or 'sitemap' in parsed_url.path.lower())
+    
+    if is_domain_only or is_not_sitemap:
+        # Save original URL in case we need to fall back
+        original_url = sitemap_url
+        
+        # WordPress sitemap formats to try in order of preference
+        wp_sitemap_formats = [
+            "/sitemap_index.xml",      # Standard WordPress sitemap index
+            "/wp-sitemap.xml",         # WordPress core sitemap
+            "/sitemap.xml",            # Common default name
+            "/post-sitemap.xml",       # Yoast SEO format
+            "/page-sitemap.xml"        # Yoast SEO format for pages
+        ]
+        
+        # Try to get a base domain without path
+        base_domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        
+        for sitemap_format in wp_sitemap_formats:
+            test_url = base_domain + sitemap_format
+            logger.info(f"Trying WordPress sitemap format: {test_url}")
+            try:
+                # Just attempt to fetch, don't need to parse yet
+                test_content = fetch_sitemap(test_url)
+                if test_content and '<urlset' in test_content or '<sitemapindex' in test_content:
+                    sitemap_url = test_url
+                    logger.info(f"Found valid WordPress sitemap at: {sitemap_url}")
+                    break
+            except Exception as e:
+                logger.debug(f"No valid sitemap found at {test_url}: {str(e)}")
+                continue
+    
     # Simple rate limiting
     client_ip = request.remote_addr
     if client_ip in request_counter and request_counter[client_ip] >= MAX_REQUESTS_PER_HOUR:
