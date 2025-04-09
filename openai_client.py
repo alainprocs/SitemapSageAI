@@ -1,7 +1,17 @@
 import os
 import json
 import logging
+import time
+import requests
 from openai import OpenAI
+# Define error classes in case package doesn't have them
+try:
+    from openai import APITimeoutError, APIConnectionError, RateLimitError
+except ImportError:
+    # Define fallback error classes if not available
+    class APITimeoutError(Exception): pass
+    class APIConnectionError(Exception): pass
+    class RateLimitError(Exception): pass
 
 # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
 # do not change this unless explicitly requested by the user
@@ -13,8 +23,12 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     logger.warning("OPENAI_API_KEY environment variable is not set")
 
-# Initialize the client globally
-openai = OpenAI(api_key=OPENAI_API_KEY)
+# Configure with extended timeouts for deployed environments
+openai = OpenAI(
+    api_key=OPENAI_API_KEY,
+    timeout=60.0,  # Longer timeout for API requests
+    max_retries=3  # Automatic retries built into OpenAI client
+)
 
 def identify_topical_clusters(urls, sitemap_stats):
     """
@@ -149,6 +163,50 @@ def identify_topical_clusters(urls, sitemap_stats):
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON response: {str(e)}")
         raise Exception(f"Failed to parse OpenAI response: {str(e)}")
+    
+    except (APITimeoutError, APIConnectionError) as e:
+        logger.error(f"OpenAI API connection error: {str(e)}")
+        # Try fallback using a simpler prompt with fewer tokens
+        try:
+            logger.info("Attempting fallback with simpler prompt...")
+            
+            # Simplify prompt to reduce token count
+            simplified_prompt = f"""
+            Analyze this sitemap for {sitemap_stats['main_domain']} with {sitemap_stats['total_urls']} URLs.
+            Group URLs into 5 topical clusters and provide a title, count, and 3 examples for each cluster.
+            Format as JSON with clusters array containing title, count, examples[], and description fields.
+            """
+            
+            # Retry with simplified prompt
+            fallback_response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are an SEO expert analyzing website sitemaps."},
+                    {"role": "user", "content": simplified_prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.5,
+                max_tokens=1000
+            )
+            
+            # Extract and parse the JSON response
+            content = fallback_response.choices[0].message.content
+            clusters_data = json.loads(content)
+            
+            # Basic validation and standardization of response
+            if 'clusters' not in clusters_data:
+                clusters_data = {'clusters': []}
+                
+            logger.info(f"Successfully processed fallback response with {len(clusters_data.get('clusters', []))} clusters")
+            return clusters_data
+            
+        except Exception as fallback_error:
+            logger.error(f"Fallback attempt also failed: {str(fallback_error)}")
+            raise Exception(f"Could not connect to OpenAI API. Please check your internet connection and API key.")
+    
+    except RateLimitError as e:
+        logger.error(f"OpenAI API rate limit exceeded: {str(e)}")
+        raise Exception("OpenAI API rate limit exceeded. Please try again in a few minutes.")
     
     except Exception as e:
         logger.error(f"Error in OpenAI analysis: {str(e)}")
