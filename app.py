@@ -22,12 +22,8 @@ def index():
     # Always inform users about what they'll get
     flash('SEO Topical Cluster Analysis: Enter a sitemap URL to analyze your website content structure', 'info')
     
-    # No need to confuse users with OpenAI API key issues - we'll handle it behind the scenes
-    from openai_client import USE_MOCK_DATA
-    if USE_MOCK_DATA:
-        flash('This demo uses pre-generated SEO analysis. Enter any sitemap URL to see the results!', 'info')
-    else:
-        flash('Enter your sitemap URL to get AI-powered SEO analysis of your content', 'info')
+    # Only using real OpenAI API - inform the user
+    flash('Enter your sitemap URL to get AI-powered SEO analysis of your content', 'info')
     
     return render_template('index.html')
 
@@ -37,14 +33,14 @@ def analyze():
     # Check if OpenAI API key is configured and appears valid
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        logger.warning("OPENAI_API_KEY environment variable is not set")
-        flash('OpenAI API key is not configured. Analysis will use sample data instead.', 'warning')
+        logger.error("OPENAI_API_KEY environment variable is not set")
+        raise Exception("OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable.")
     elif api_key.startswith(('sk_test_', 'sk_live_')):
-        logger.warning("Invalid API key format (looks like a Stripe key)")
-        flash('Your OpenAI API key appears to be a Stripe key, not an OpenAI key.', 'warning')
+        logger.error("Invalid API key format (looks like a Stripe key)")
+        raise Exception("Your OpenAI API key appears to be a Stripe key, not an OpenAI key.")
     elif len(api_key) < 20:  # OpenAI keys are typically longer
-        logger.warning("API key appears too short to be valid")
-        flash('Your OpenAI API key appears to be invalid (too short).', 'warning')
+        logger.error("API key appears too short to be valid")
+        raise Exception("Your OpenAI API key appears to be invalid (too short).")
     
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
@@ -112,10 +108,10 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
-        # Get topical clusters (we'll use mock data by default now for reliability)
+        # Get topical clusters using OpenAI API exclusively
         logger.info("Identifying topical clusters")
         try:
-            # We have a robust fallback system in place now
+            # Use only OpenAI API - no fallback to mock data
             clusters = identify_topical_clusters(urls, sitemap_stats)
             logger.info(f"Identified {len(clusters.get('clusters', []))} topical clusters")
             
@@ -124,15 +120,10 @@ def analyze():
             
         except Exception as ai_error:
             logger.error(f"Error generating clusters: {str(ai_error)}")
-            logger.error("Using emergency fallback to generate clusters")
+            logger.error("OpenAI API error - no fallback available")
             
-            # Get mock clusters directly as an emergency fallback
-            from openai_client import get_mock_clusters
-            clusters = get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
-            
-            # Inform the user about fallback
-            flash('We had some trouble with the analysis, but managed to generate results for you.', 'warning')
-            logger.info(f"Generated {len(clusters.get('clusters', []))} fallback clusters")
+            # No fallback to mock data - just show the error
+            raise Exception(f"OpenAI API error: {str(ai_error)}. Please try again later.")
         
         # Update rate limiting counter
         request_counter[client_ip] = request_counter.get(client_ip, 0) + 1
