@@ -2,9 +2,8 @@ import os
 import json
 import logging
 import time
+import requests
 import random
-import socket
-import ssl
 
 logger = logging.getLogger(__name__)
 
@@ -13,60 +12,36 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     logger.warning("OPENAI_API_KEY environment variable is not set")
 
-# Always have USE_MOCK_DATA as a fallback option, but default to False
+# Only use mock data if absolutely necessary
 USE_MOCK_DATA = False
-client = None
 
-# Define error classes so we can reference them even if the import fails
-class APITimeoutError(Exception): pass
-class APIConnectionError(Exception): pass
-class RateLimitError(Exception): pass
-
-# Try to import OpenAI library and initialize client
 try:
-    import requests
     from openai import OpenAI
-    
-    # Try to get more specific error classes if available
+    # Define error classes in case package doesn't have them
     try:
-        from openai import APITimeoutError as OAITimeoutError
-        from openai import APIConnectionError as OAIConnectionError
-        from openai import RateLimitError as OAIRateLimitError
-        APITimeoutError = OAITimeoutError
-        APIConnectionError = OAIConnectionError
-        RateLimitError = OAIRateLimitError
+        from openai import APITimeoutError, APIConnectionError, RateLimitError
     except ImportError:
-        # Keep our generic ones defined above
-        pass
-    
-    # Test if we can reach the OpenAI API
-    try:
-        # First make sure API key looks valid
-        if OPENAI_API_KEY and len(OPENAI_API_KEY) > 20:
-            # Initialize the client with generous timeout settings
-            client = OpenAI(
-                api_key=OPENAI_API_KEY,
-                timeout=90.0,  # Very long timeout
-                max_retries=2   # Built-in retries
-            )
-            
-            logger.info("OpenAI client initialized, will try to use real AI analysis")
-        else:
-            logger.warning("Invalid OpenAI API key, falling back to mock data")
-            USE_MOCK_DATA = True
-    except Exception as init_error:
-        logger.error(f"OpenAI client initialization error: {init_error}")
-        USE_MOCK_DATA = True
+        class APITimeoutError(Exception): pass
+        class APIConnectionError(Exception): pass
+        class RateLimitError(Exception): pass
         
-except (ImportError, Exception) as e:
-    logger.error(f"Error setting up OpenAI: {e}")
-    USE_MOCK_DATA = True
-
-# Always log our decision
-if USE_MOCK_DATA:
-    logger.warning("Application is running in mock data mode")
-else:
-    logger.info("Application is set up to use OpenAI API")
+    # Initialize the OpenAI client
+    client = OpenAI(
+        api_key=OPENAI_API_KEY,
+        timeout=60.0,  # Longer timeout for API requests
+        max_retries=3  # Automatic retries built into OpenAI client
+    )
+except Exception as e:
+    logger.error(f"OpenAI initialization failed: {e}")
+    # Define fallback error classes and set USE_MOCK_DATA if needed
+    class APITimeoutError(Exception): pass
+    class APIConnectionError(Exception): pass
+    class RateLimitError(Exception): pass
+    client = None
+    
+    # Only use mock if we can't initialize the client
+    if not OPENAI_API_KEY:
+        USE_MOCK_DATA = True
 
 # Let's define some high-quality mock clusters that will be used when OpenAI is unavailable
 def get_mock_clusters(domain, url_count):
@@ -242,13 +217,10 @@ def identify_topical_clusters(urls, sitemap_stats):
     Returns:
         dict: Top 5 topical clusters with counts and examples
     """
-    # For immediate reliability, use mock data when OpenAI is not available
-    if USE_MOCK_DATA or not client:
-        logger.info("Using mock response for topical clusters to ensure reliability")
+    # If we can't use OpenAI, fall back to mock data
+    if USE_MOCK_DATA or not OPENAI_API_KEY or not client:
+        logger.info("Using mock response for topical clusters")
         return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
-    
-    # OpenAI analysis logic below
-    logger.info(f"Starting OpenAI analysis of {len(urls[:100])} URLs from the sitemap")
     
     try:
         # Prepare the URL list for analysis
@@ -313,15 +285,15 @@ def identify_topical_clusters(urls, sitemap_stats):
                 
                 # Call the OpenAI API
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",  # Use a more reliable model for this task
+                    model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024
                     messages=[
                         {"role": "system", "content": "You are an SEO expert analyzing website sitemaps to identify topical clusters."},
                         {"role": "user", "content": prompt}
                     ],
                     response_format={"type": "json_object"},
-                    temperature=0.3,  # Lower temperature for more consistent results
-                    max_tokens=1500,  # Slightly smaller response size
-                    timeout=30  # 30 second timeout for faster response
+                    temperature=0.5,
+                    max_tokens=2000,
+                    timeout=60  # 60 second timeout
                 )
                 
                 # Extract and parse the JSON response
