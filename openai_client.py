@@ -12,34 +12,22 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     logger.warning("OPENAI_API_KEY environment variable is not set")
 
-# Always use mock data by default for reliability
-# Set this to False to try using the OpenAI API with fallback to mock
-USE_MOCK_DATA = True  
+# NEVER use mock data - we only want real OpenAI API responses
+USE_MOCK_DATA = False  
 
-# Define error classes
+# Define error classes for exception handling
 class APITimeoutError(Exception): pass
 class APIConnectionError(Exception): pass
 class RateLimitError(Exception): pass
 
-# Initialize client as None
-client = None
-
-# Only try to initialize OpenAI if we have an API key
-if OPENAI_API_KEY:
-    try:
-        from openai import OpenAI
-        # Initialize the OpenAI client
-        client = OpenAI(
-            api_key=OPENAI_API_KEY,
-            timeout=30.0,  # Shorter timeout for API requests
-            max_retries=2  # Fewer retries to fail faster
-        )
-        logger.info("OpenAI client initialized successfully")
-        # If we have a client, we can try to use the API
-        USE_MOCK_DATA = False
-    except Exception as e:
-        logger.error(f"OpenAI initialization failed: {e}")
-        client = None
+# Initialize the OpenAI client
+from openai import OpenAI
+client = OpenAI(
+    api_key=OPENAI_API_KEY,
+    timeout=120.0,  # Longer timeout to prevent timeouts
+    max_retries=5  # More retries for reliability
+)
+logger.info("OpenAI client initialized successfully")
 
 # Let's define some high-quality mock clusters that will be used when OpenAI is unavailable
 def get_mock_clusters(domain, url_count):
@@ -205,8 +193,8 @@ def get_mock_clusters(domain, url_count):
 
 def identify_topical_clusters(urls, sitemap_stats):
     """
-    Analyze sitemap URLs to identify topical clusters.
-    Uses real OpenAI if available, otherwise falls back to mock data.
+    Analyze sitemap URLs to identify topical clusters using OpenAI.
+    Only uses the real OpenAI API - no mock data.
     
     Args:
         urls (list): List of URL dictionaries
@@ -215,10 +203,9 @@ def identify_topical_clusters(urls, sitemap_stats):
     Returns:
         dict: Top 5 topical clusters with counts and examples
     """
-    # If we can't use OpenAI, fall back to mock data
-    if USE_MOCK_DATA or not OPENAI_API_KEY or not client:
-        logger.info("Using mock response for topical clusters")
-        return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
+    # ONLY use OpenAI API - no mock data ever
+    # Log that we're using the real OpenAI
+    logger.info("Using OpenAI API for topical cluster analysis")
     
     try:
         # Prepare the URL list for analysis
@@ -360,29 +347,30 @@ def identify_topical_clusters(urls, sitemap_stats):
             except (APITimeoutError, APIConnectionError, requests.exceptions.Timeout) as e:
                 logger.error(f"OpenAI API connection error (attempt {attempt+1}): {str(e)}")
                 if attempt == max_retries - 1:
-                    logger.warning("All API connection attempts failed, falling back to mock data")
-                    return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
+                    # No fallback - only use OpenAI API
+                    logger.error("All API connection attempts failed - no fallback available")
+                    raise Exception("Failed to connect to OpenAI API after multiple attempts. Please try again later.")
                 time.sleep(retry_delay)
             
             except RateLimitError as e:
                 logger.error(f"OpenAI API rate limit exceeded: {str(e)}")
-                # Use mock clusters for rate limiting too
-                logger.warning("Rate limit hit, falling back to mock data")
-                return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
+                # No fallback - only use OpenAI API
+                logger.error("API rate limit reached - no fallback available")
+                raise Exception("OpenAI API rate limit reached. Please try again later.")
             
             except Exception as e:
                 logger.error(f"Error in OpenAI analysis (attempt {attempt+1}): {str(e)}")
                 if attempt == max_retries - 1:
-                    # Fall back to mock data for any other error after all retries
-                    logger.warning("All API attempts failed, falling back to mock data")
-                    return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
+                    # No fallback - only use OpenAI API
+                    logger.error("All API attempts failed - no fallback available")
+                    raise Exception(f"Error using OpenAI API: {str(e)}. Please try again later.")
                 time.sleep(retry_delay)
         
         # This should never be reached due to the returns in the retry loop
         logger.error("Unexpected code path in identify_topical_clusters")
-        return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
+        raise Exception("An unexpected error occurred during OpenAI API processing. Please try again.")
         
     except Exception as e:
         logger.error(f"Unexpected error in identify_topical_clusters: {str(e)}")
-        # Fall back to mock data for any unexpected error
-        return get_mock_clusters(sitemap_stats['main_domain'], sitemap_stats['total_urls'])
+        # No fallback to mock data - only use real OpenAI
+        raise Exception(f"Failed to process data with OpenAI: {str(e)}. Please try again later.")
