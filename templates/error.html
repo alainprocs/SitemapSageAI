@@ -12,76 +12,114 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body class="modern-ui">
-    <div class="container">
-        <div class="result-header">
-            <h1>Error Occurred</h1>
-            <a href="{{ url_for('index') }}" class="back-link">
+    <!-- Hero Section with grid background -->
+    <div class="hero-section-container" style="min-height: auto; padding-bottom: 0;">
+        <!-- Background gradient -->
+        <div class="hero-bg-gradient"></div>
+        
+        <!-- Grid Animation -->
+        <div class="retro-grid">
+            <div class="grid-inner">
+                <div class="grid-lines"></div>
+            </div>
+            <div class="grid-fade"></div>
+        </div>
+        
+        <div class="hero-content" style="padding: 2rem 1rem;">
+            <!-- Small tag at top -->
+            <div class="hero-tag" style="background: linear-gradient(to right, rgba(255, 0, 0, 0.05), rgba(255, 0, 0, 0.1)); border: 2px solid rgba(255, 0, 0, 0.1);">
+                <span>Error Occurred</span>
+                <i data-lucide="alert-triangle" class="tag-icon" style="color: rgba(255, 0, 0, 0.7);"></i>
+            </div>
+            
+            <!-- Main heading with gradient -->
+            <h1 class="hero-title" style="margin-bottom: 0.5rem;">
+                <span class="title-regular">{{ error_type|default('Something Went Wrong') }}</span>
+            </h1>
+            
+            <!-- Back to home link -->
+            <a href="{{ url_for('index') }}" class="back-link" style="margin-bottom: 2rem;">
                 <i data-lucide="home"></i>
                 <span>Return to Home</span>
             </a>
         </div>
-        
-        <div class="result-container" style="max-width: 700px; margin: 0 auto;">
-            <div style="text-align: center; padding: 2rem 0;">
-                <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: #ff3333; margin-bottom: 1rem;"></i>
-                <h2 style="margin-bottom: 1.5rem; color: #ff3333;">{{ error_type|default('Something Went Wrong') }}</h2>
+    </div>
+    
+    <div class="container" style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+        <div class="result-container" style="margin-top: -2rem; position: relative; z-index: 20; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); text-align: center;">
+            <div style="padding: 1rem 0;">
+                <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: #ff4e4e; margin-bottom: 1rem;"></i>
                 
                 {% if sitemap_url %}
                 <div style="margin-bottom: 1.5rem;">
                     <span style="color: var(--muted-foreground);">URL:</span> 
-                    <code style="background-color: var(--muted); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">{{ sitemap_url }}</code>
+                    <code style="background-color: rgba(139, 92, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 0.25rem; color: #EC4899;">{{ sitemap_url }}</code>
                 </div>
                 {% endif %}
                 
-                <p style="margin-bottom: 2rem;">{{ error }}</p>
+                <p style="margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; color: var(--muted-foreground);">{{ error }}</p>
                 
                 {% if xml_sample %}
-                <div style="border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 2rem; text-align: left;">
-                    <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                        <span>XML Content Sample</span>
+                <div style="border: 1px solid rgba(139, 92, 246, 0.1); border-radius: var(--radius); margin-bottom: 2rem; text-align: left; background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1));">
+                    <div style="padding: 0.75rem 1rem; border-bottom: 1px solid rgba(139, 92, 246, 0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #8B5CF6;">XML Content Sample</span>
                         <button id="toggleXml" style="background: none; border: none; color: var(--foreground); cursor: pointer;">
                             <i data-lucide="chevron-down"></i>
                         </button>
                     </div>
                     <div id="xmlSample" style="display: none;">
                         <div style="padding: 1rem;">
-                            <pre style="background-color: var(--card); padding: 1rem; border-radius: var(--radius); overflow-x: auto; font-size: 0.875rem; margin: 0;"><code>{{ xml_sample }}</code></pre>
+                            <pre style="background-color: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: var(--radius); overflow-x: auto; font-size: 0.875rem; margin: 0;"><code>{{ xml_sample }}</code></pre>
                         </div>
                     </div>
                 </div>
                 {% endif %}
                 
-                <div style="background-color: var(--muted); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Suggested Solutions:</h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 0;">
+                <div style="background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02)); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: left; border: 1px solid rgba(139, 92, 246, 0.1);">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem; color: #8B5CF6;">Suggested Solutions:</h3>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 0; color: var(--muted-foreground);">
                         {% if suggestions %}
                             {% for suggestion in suggestions %}
-                                <li style="margin-bottom: 0.5rem;">{{ suggestion }}</li>
+                                <li style="margin-bottom: 0.75rem;">{{ suggestion }}</li>
                             {% endfor %}
                         {% else %}
-                            <li style="margin-bottom: 0.5rem;">Check if the sitemap URL is correct and accessible</li>
-                            <li style="margin-bottom: 0.5rem;">Ensure the sitemap is in valid XML format</li>
-                            <li style="margin-bottom: 0.5rem;">Try a different sitemap if this one continues to fail</li>
-                            <li style="margin-bottom: 0.5rem;">For WordPress sites, try '/post-sitemap.xml', '/page-sitemap.xml', or '/wp-sitemap.xml'</li>
-                            <li style="margin-bottom: 0.5rem;">Check if the sitemap is too large (try a sub-sitemap)</li>
+                            <li style="margin-bottom: 0.75rem;">Check if the sitemap URL is correct and accessible</li>
+                            <li style="margin-bottom: 0.75rem;">Ensure the sitemap is in valid XML format</li>
+                            <li style="margin-bottom: 0.75rem;">Try a different sitemap if this one continues to fail</li>
+                            <li style="margin-bottom: 0.75rem;">For WordPress sites, try '/wp-sitemap.xml' or '/sitemap_index.xml'</li>
+                            <li style="margin-bottom: 0.75rem;">Check if the sitemap is too large (try a sub-sitemap)</li>
                         {% endif %}
                     </ul>
                 </div>
                 
-                <div>
-                    <a href="{{ url_for('index') }}" class="button" style="display: inline-flex; max-width: 200px; margin-right: 1rem;">
-                        <i data-lucide="refresh-cw" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
-                        <span>Try Again</span>
-                    </a>
+                <div style="margin-top: 2rem;">
+                    <div class="cta-button-wrapper" style="display: inline-block; margin-right: 1rem;">
+                        <span class="button-glow"></span>
+                        <a href="{{ url_for('index') }}" class="hero-button" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                            <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+                            <span>Try Again</span>
+                        </a>
+                    </div>
                     
                     {% if sitemap_url %}
-                    <a href="{{ sitemap_url }}" target="_blank" style="display: inline-flex; align-items: center; color: var(--muted-foreground); text-decoration: none;">
+                    <a href="{{ sitemap_url }}" target="_blank" style="display: inline-flex; align-items: center; color: var(--muted-foreground); text-decoration: none; margin-top: 1rem;">
                         <i data-lucide="external-link" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
                         <span>View Original Sitemap</span>
                     </a>
                     {% endif %}
                 </div>
             </div>
+        </div>
+        
+        <!-- Footer section -->
+        <div style="text-align: center; margin: 4rem 0 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+            <div class="hero-tag" style="margin-bottom: 1rem;">
+                <span>Need Help?</span>
+                <i data-lucide="help-circle" class="tag-icon"></i>
+            </div>
+            <p style="color: var(--muted-foreground); font-size: 0.875rem;">
+                If you continue experiencing issues, try a different sitemap URL or check that your API key is valid.
+            </p>
         </div>
     </div>
 

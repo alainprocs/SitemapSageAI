@@ -19,11 +19,29 @@ request_counter = {}
 @app.route('/')
 def index():
     """Render the main page with the sitemap URL input form."""
+    # Check if OpenAI API key is configured
+    if not os.environ.get("OPENAI_API_KEY"):
+        flash('Warning: OpenAI API key is not set up. Analysis functionality will not work properly.', 'warning')
+    
     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
     """Process the sitemap URL and analyze it for topical clusters."""
+    # Check if OpenAI API key is configured first
+    if not os.environ.get("OPENAI_API_KEY"):
+        logger.error("OPENAI_API_KEY environment variable is not set")
+        flash('OpenAI API key is not configured. Please set up your environment variable.', 'danger')
+        return render_template('error.html', 
+                              error="Missing API Key", 
+                              sitemap_url="",
+                              error_type="Configuration Error",
+                              suggestions=[
+                                  "Set the OPENAI_API_KEY environment variable",
+                                  "Ensure your API key has sufficient credits",
+                                  "Contact the administrator if you don't have access to the API key"
+                              ])
+    
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
     if not sitemap_url:
