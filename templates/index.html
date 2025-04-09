@@ -14,82 +14,153 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body>
-    <!-- Header -->
-    <header class="py-4 bg-dark">
+    <!-- Modern Header with Gradient -->
+    <header class="py-5" style="background: linear-gradient(120deg, #1a1a1a, #2c2c2c); border-bottom: 1px solid rgba(255,255,255,0.05);">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="display-4 mb-2">SEO Topical Cluster Analyzer</h1>
-                    <p class="lead text-secondary">Identify key topical clusters from your website's sitemap using AI-powered analysis</p>
+                    <h1 class="display-4 mb-2" style="font-weight: 700;">SEO Topical Cluster Analyzer</h1>
+                    <p class="lead text-info" style="opacity: 0.9;">Identify key topical clusters from your website's sitemap using AI-powered analysis</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <i class="fas fa-sitemap fa-4x text-info opacity-50"></i>
+                    <div class="icon-container" style="position: relative; display: inline-block;">
+                        <i class="fas fa-sitemap fa-4x text-info" style="opacity: 0.6;"></i>
+                        <i class="fas fa-chart-pie fa-2x text-primary" style="position: absolute; bottom: 0; right: 0; opacity: 0.8;"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="container py-4">
-        <!-- Introduction Section -->
+    <main class="container py-5">
+        <!-- Introduction Section with Modern Card Design -->
         <section class="mb-5">
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-lg-8">
-                    <div class="card bg-dark">
+                    <div class="card">
                         <div class="card-body">
                             <h2 class="card-title"><i class="fas fa-info-circle text-info me-2"></i>What This Tool Does</h2>
                             <p class="card-text">Our SEO Topical Cluster Analyzer uses advanced AI to examine your website's sitemap and identify the most important topical clusters for SEO optimization.</p>
                             
-                            <h5 class="mt-4">Key Features:</h5>
-                            <ul>
-                                <li>Automatically analyzes sitemap content</li>
-                                <li>Identifies top 5 topical clusters based on SEO best practices</li>
-                                <li>Shows URL count and examples for each cluster</li>
-                                <li>Provides SEO insights specific to your content</li>
-                                <li>Visualizes content distribution across topics</li>
-                            </ul>
+                            <h5 class="mt-4 text-info">Key Features:</h5>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="feature-item d-flex align-items-start mb-3">
+                                        <div class="feature-icon me-3 mt-1">
+                                            <i class="fas fa-robot text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">AI-Powered Analysis</h6>
+                                            <p class="small text-secondary mb-0">Leverages OpenAI to identify meaningful content clusters</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-item d-flex align-items-start mb-3">
+                                        <div class="feature-icon me-3 mt-1">
+                                            <i class="fas fa-chart-pie text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Visual Insights</h6>
+                                            <p class="small text-secondary mb-0">Clear visualizations of topic distribution</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="feature-item d-flex align-items-start mb-3">
+                                        <div class="feature-icon me-3 mt-1">
+                                            <i class="fas fa-search text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">SEO Recommendations</h6>
+                                            <p class="small text-secondary mb-0">Actionable insights to improve rankings</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-item d-flex align-items-start mb-3">
+                                        <div class="feature-icon me-3 mt-1">
+                                            <i class="fas fa-link text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">URL Categorization</h6>
+                                            <p class="small text-secondary mb-0">Groups similar content for better structure</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="card bg-dark h-100">
+                    <div class="card h-100">
                         <div class="card-body">
                             <h2 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i>Why It Matters</h2>
                             <p class="card-text">Topical clusters help search engines understand your site's authority on specific subjects. Well-structured content clusters typically result in:</p>
-                            <ul>
-                                <li>Higher search rankings</li>
-                                <li>Better topical relevancy</li>
-                                <li>Improved internal linking opportunities</li>
-                                <li>Enhanced user navigation experience</li>
-                            </ul>
+                            
+                            <div class="mt-4">
+                                <div class="benefit-item d-flex align-items-center mb-3">
+                                    <div class="benefit-icon me-3">
+                                        <i class="fas fa-arrow-up text-success"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Higher search rankings</h6>
+                                    </div>
+                                </div>
+                                <div class="benefit-item d-flex align-items-center mb-3">
+                                    <div class="benefit-icon me-3">
+                                        <i class="fas fa-bullseye text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Better topical relevancy</h6>
+                                    </div>
+                                </div>
+                                <div class="benefit-item d-flex align-items-center mb-3">
+                                    <div class="benefit-icon me-3">
+                                        <i class="fas fa-project-diagram text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Improved internal linking</h6>
+                                    </div>
+                                </div>
+                                <div class="benefit-item d-flex align-items-center mb-3">
+                                    <div class="benefit-icon me-3">
+                                        <i class="fas fa-users text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Enhanced user experience</h6>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Input Form Section -->
+        <!-- Input Form Section with Modern Design -->
         <section class="my-5">
-            <div class="card bg-dark">
+            <div class="card">
                 <div class="card-body">
                     <h2 class="card-title mb-4"><i class="fas fa-search text-info me-2"></i>Analyze Your Sitemap</h2>
                     
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             {% for category, message in messages %}
-                                <div class="alert alert-{{ category }}" role="alert">
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                                     {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
                             {% endfor %}
                         {% endif %}
                     {% endwith %}
                     
                     <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post">
-                        <div class="mb-3">
-                            <label for="sitemap_url" class="form-label">Sitemap URL:</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-link"></i></span>
+                        <div class="mb-4">
+                            <label for="sitemap_url" class="form-label">Sitemap URL</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text" style="border-radius: 1.5rem 0 0 1.5rem; border: none; background-color: rgba(0,0,0,0.2);">
+                                    <i class="fas fa-link"></i>
+                                </span>
                                 <input type="text" class="form-control" id="sitemap_url" name="sitemap_url" 
-                                       placeholder="example.com/sitemap.xml or https://example.com/sitemap.xml" required>
+                                       placeholder="example.com/sitemap.xml or https://example.com/sitemap.xml" required
+                                       style="border-radius: 0 1.5rem 1.5rem 0; border: none; padding-left: 1rem; background-color: rgba(0,0,0,0.2);">
                             </div>
                             <div class="form-text help-text mt-2">
                                 <i class="fas fa-info-circle me-1"></i>
@@ -98,9 +169,10 @@
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" id="submit-button" class="btn btn-primary">
-                                <i class="fas fa-chart-network me-2"></i>Analyze Sitemap
-                                <span id="loading-indicator" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <button type="submit" id="submit-button" class="btn btn-primary btn-lg" style="border-radius: 1.5rem; padding: 0.8rem 2rem;">
+                                <span class="button-text">Analyze Sitemap</span>
+                                <i class="fas fa-chart-network ms-2"></i>
+                                <span id="loading-indicator" class="spinner-border spinner-border-sm d-none ms-2" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
                     </form>
@@ -108,43 +180,96 @@
             </div>
         </section>
         
-        <!-- Examples Section -->
+        <!-- Examples Section with Modern Card Design -->
         <section class="my-5">
             <h2 class="mb-4"><i class="fas fa-file-alt text-info me-2"></i>Example Sitemaps to Try</h2>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="card bg-dark h-100">
+                    <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">WordPress Blog</h5>
-                            <p class="card-text">Simple blog with categories and tags</p>
-                            <code>wordpress.org/sitemap.xml</code>
-                            <button class="btn btn-sm btn-outline-info mt-2 copy-btn" data-copy="wordpress.org/sitemap.xml">
-                                <i class="fas fa-copy me-1"></i>Copy
-                            </button>
+                            <div class="example-icon mb-3 text-center">
+                                <i class="fab fa-wordpress fa-2x text-info"></i>
+                            </div>
+                            <h5 class="card-title text-center">WordPress Blog</h5>
+                            <p class="card-text text-center">Simple blog with categories and tags</p>
+                            <div class="mt-4 example-url-container p-2 rounded" style="background-color: rgba(0,0,0,0.2);">
+                                <code>wordpress.org/sitemap.xml</code>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-info copy-btn" data-copy="wordpress.org/sitemap.xml">
+                                    <i class="fas fa-copy me-1"></i>Copy & Use
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card bg-dark h-100">
+                    <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">News Website</h5>
-                            <p class="card-text">News site with multiple categories</p>
-                            <code>cnn.com/sitemaps/sitemap-index.xml</code>
-                            <button class="btn btn-sm btn-outline-info mt-2 copy-btn" data-copy="cnn.com/sitemaps/sitemap-index.xml">
-                                <i class="fas fa-copy me-1"></i>Copy
-                            </button>
+                            <div class="example-icon mb-3 text-center">
+                                <i class="fas fa-newspaper fa-2x text-warning"></i>
+                            </div>
+                            <h5 class="card-title text-center">News Website</h5>
+                            <p class="card-text text-center">News site with multiple categories</p>
+                            <div class="mt-4 example-url-container p-2 rounded" style="background-color: rgba(0,0,0,0.2);">
+                                <code>cnn.com/sitemaps/sitemap-index.xml</code>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-info copy-btn" data-copy="cnn.com/sitemaps/sitemap-index.xml">
+                                    <i class="fas fa-copy me-1"></i>Copy & Use
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card bg-dark h-100">
+                    <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">E-commerce Store</h5>
-                            <p class="card-text">Online shop with product categories</p>
-                            <code>bestbuy.com/sitemap.xml</code>
-                            <button class="btn btn-sm btn-outline-info mt-2 copy-btn" data-copy="bestbuy.com/sitemap.xml">
-                                <i class="fas fa-copy me-1"></i>Copy
-                            </button>
+                            <div class="example-icon mb-3 text-center">
+                                <i class="fas fa-shopping-cart fa-2x text-success"></i>
+                            </div>
+                            <h5 class="card-title text-center">E-commerce Store</h5>
+                            <p class="card-text text-center">Online shop with product categories</p>
+                            <div class="mt-4 example-url-container p-2 rounded" style="background-color: rgba(0,0,0,0.2);">
+                                <code>bestbuy.com/sitemap.xml</code>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-info copy-btn" data-copy="bestbuy.com/sitemap.xml">
+                                    <i class="fas fa-copy me-1"></i>Copy & Use
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- New Feature Highlight Section -->
+        <section class="my-5">
+            <div class="card" style="background: linear-gradient(120deg, #1d1d1d, #242424); border-color: rgba(54, 162, 235, 0.2);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-7">
+                            <h2 class="card-title mb-3">
+                                <i class="fas fa-sparkles text-warning me-2"></i>New Feature: Text Streaming
+                            </h2>
+                            <p>We've added a new text streaming feature that animates the analysis results as they appear. This makes it easier to follow the information as it loads, creating a more engaging user experience.</p>
+                            <div class="mt-4">
+                                <button class="btn btn-outline-info" disabled>
+                                    <span class="animate-text">See it in action in the results page...</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-5 text-center mt-4 mt-lg-0">
+                            <div class="feature-illustration">
+                                <i class="fas fa-terminal fa-3x text-info mb-3"></i>
+                                <div class="typing-animation">
+                                    <div class="typing-line" style="width: 70%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
+                                    <div class="typing-line" style="width: 40%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
+                                    <div class="typing-line" style="width: 80%; height: 8px; background-color: rgba(255,255,255,0.1); margin-bottom: 10px; border-radius: 4px;"></div>
+                                    <div class="typing-cursor" style="height: 20px; width: 3px; background-color: var(--bs-info); animation: blink-caret 0.75s step-end infinite;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -152,11 +277,16 @@
         </section>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer with Modern Design -->
     <footer class="footer">
         <div class="container text-center">
-            <p class="mb-0">SEO Topical Cluster Analyzer using OpenAI</p>
-            <p class="small text-secondary mt-1">Analyze your website structure for better SEO performance</p>
+            <div class="mb-3">
+                <i class="fas fa-sitemap text-info me-2"></i>
+                <i class="fas fa-chart-pie text-primary me-2"></i>
+                <i class="fas fa-robot text-warning"></i>
+            </div>
+            <p class="mb-1">SEO Topical Cluster Analyzer using OpenAI</p>
+            <p class="small text-secondary">Analyze your website structure for better SEO performance</p>
         </div>
     </footer>
 
