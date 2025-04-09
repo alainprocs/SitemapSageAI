@@ -81,3 +81,34 @@ section {
     color: var(--bs-secondary);
     font-size: 0.875rem;
 }
+
+/* Article ideas styling */
+.article-ideas .accordion-item {
+    border: 1px solid rgba(var(--bs-info-rgb), 0.2);
+    margin-bottom: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.article-ideas .accordion-button {
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+.article-ideas .accordion-button:not(.collapsed) {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    box-shadow: none;
+}
+
+.article-ideas .accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(var(--bs-info-rgb), 0.5);
+}
+
+.article-ideas .accordion-body {
+    background-color: var(--bs-dark);
+    border-top: 1px solid rgba(var(--bs-info-rgb), 0.2);
+}
+
+.article-ideas .fas.fa-pen-fancy {
+    color: var(--bs-info);
+}

@@ -53,6 +53,7 @@ def identify_topical_clusters(urls, sitemap_stats):
         3. List 3 example URLs for each cluster
         4. Provide a brief description of each cluster and its SEO significance
         5. Suggest a descriptive title for each cluster
+        6. Suggest 5 engaging blog article ideas for each cluster that would be ideal for expanding the content in that topic area. Each suggestion should include a compelling headline and a brief description of what the article would cover.
         
         Respond with JSON in the following format:
         {{
@@ -62,13 +63,20 @@ def identify_topical_clusters(urls, sitemap_stats):
                     "description": "Brief description of this topical cluster",
                     "count": "Approximate number of URLs in this cluster",
                     "examples": ["example-url-1", "example-url-2", "example-url-3"],
-                    "seo_significance": "Why this cluster is significant for SEO"
+                    "seo_significance": "Why this cluster is significant for SEO",
+                    "article_ideas": [
+                        {{
+                            "headline": "Compelling article headline",
+                            "description": "Brief description of the article content"
+                        }},
+                        // 4 more article ideas
+                    ]
                 }},
-                ...
+                // more clusters
             ]
         }}
         
-        Only include the 5 most significant clusters ordered by importance.
+        Only include the 5 most significant clusters ordered by importance. Ensure the article ideas are specific, relevant to the cluster topic, and designed to address potential content gaps or trending topics that would enhance SEO performance.
         """
         
         # Call the OpenAI API to generate the analysis
@@ -124,6 +132,15 @@ def identify_topical_clusters(urls, sitemap_stats):
             
             if 'seo_significance' not in cluster:
                 cluster['seo_significance'] = 'No SEO significance provided'
+                
+            # Ensure article_ideas exists and is properly formatted
+            if 'article_ideas' not in cluster or not isinstance(cluster['article_ideas'], list):
+                cluster['article_ideas'] = [
+                    {
+                        "headline": f"Article idea for {cluster['title']}",
+                        "description": "Suggested content based on this topical cluster"
+                    }
+                ] * 5  # Create 5 placeholder article ideas
         
         logger.info(f"Successfully processed {len(clusters_data['clusters'])} topical clusters")
         logger.debug(f"Processed clusters data: {json.dumps(clusters_data)}")
