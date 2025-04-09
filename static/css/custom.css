@@ -9,18 +9,22 @@
     --card-border: 1px solid rgba(255, 255, 255, 0.05);
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-tertiary: rgba(255, 255, 255, 0.4);
     --btn-primary-bg: #ffffff;
     --btn-primary-text: #000000;
     --btn-secondary-bg: #242424;
     --btn-secondary-text: #ffffff;
-    --section-bg: #111111;
+    --section-bg: #000000;
     --highlight-color: #ffffff;
+    --icon-color: rgba(255, 255, 255, 0.8);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --page-bg: #000000;
 }
 
 /* Global styles - Based on Jul.chat UI */
 body {
     overflow-x: hidden;
-    background-color: #000000;
+    background-color: var(--page-bg);
     color: var(--text-primary);
 }
 
@@ -162,7 +166,7 @@ a:hover {
 }
 
 .cluster-title {
-    color: var(--highlight-color);
+    color: var(--text-primary);
     font-weight: 600;
     font-size: 1.4rem;
     margin-bottom: 0.8rem;
@@ -179,7 +183,7 @@ a:hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.6rem;
-    border-left: 3px solid rgba(54, 162, 235, 0.5);
+    border-left: 3px solid rgba(255, 255, 255, 0.2);
 }
 
 .copy-btn {
@@ -221,21 +225,21 @@ a:hover {
     left: 10%;
     width: 80%;
     height: 3px;
-    background: linear-gradient(to right, transparent, var(--highlight-color), transparent);
-    opacity: 0.5;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5), transparent);
+    opacity: 0.3;
 }
 
 .stat-value {
     font-size: 2.4rem;
     font-weight: 700;
-    color: var(--highlight-color);
-    text-shadow: 0 0 15px rgba(54, 162, 235, 0.3);
+    color: var(--text-primary);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .stat-label {
     margin-top: 0.5rem;
     font-size: 0.95rem;
-    color: var(--secondary-highlight);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -263,7 +267,7 @@ section {
 
 /* Help text */
 .help-text {
-    color: var(--secondary-highlight);
+    color: var(--text-secondary);
     font-size: 0.875rem;
     opacity: 0.8;
 }
@@ -303,8 +307,8 @@ section:nth-child(3) {
 
 /* Chart error styles */
 .chart-error-message {
-    background-color: rgba(220, 53, 69, 0.1);
-    border: 1px solid rgba(220, 53, 69, 0.3);
+    background-color: rgba(50, 50, 50, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     padding: 2rem;
 }
@@ -330,7 +334,7 @@ section:nth-child(3) {
     content: '✓';
     position: absolute;
     left: 0;
-    color: var(--highlight-color);
+    color: var(--text-primary);
     font-weight: bold;
 }
 
