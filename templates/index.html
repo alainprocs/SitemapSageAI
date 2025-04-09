@@ -12,6 +12,67 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        /* Override any colored text with white or gray */
+        h1, h2, h3, h4, h5, h6, p, span, a, div, li {
+            color: white !important;
+        }
+        
+        .text-secondary, p.card-text, .form-text, footer p.small {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        /* Fix colored icons - very important to override Bootstrap colors */
+        i[class*="text-"], i.fa, i.fas, i.fab {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Specifically target key color classes */
+        .text-info, .text-primary, .text-success, .text-warning, .text-danger {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Target specific headings with color classes */
+        h5.text-info, h5.mt-4.text-info {
+            color: white !important;
+        }
+        
+        /* Remove any colored buttons */
+        .btn-info, .btn-primary, .btn-success, .btn-warning, .btn-danger, 
+        .btn-outline-info, .btn-outline-primary, .btn-outline-success, .btn-outline-warning, .btn-outline-danger {
+            background-color: #242424 !important;
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* Fix the feature section teal color */
+        #what-is-section h2, #what-is-section .h2,
+        #what-is-section h3, #what-is-section .h3,
+        .key-features, .key-features h3, .feature-title {
+            color: white !important;
+        }
+        
+        /* Fix lead paragraphs that might have color */
+        p.lead {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        
+        /* Fix any links that might have color */
+        a, a:hover, a:focus, a:active {
+            color: rgba(255, 255, 255, 0.8) !important;
+            text-decoration: underline;
+        }
+        
+        /* Ensure text in cards is consistently styled */
+        .card-title, .card-text {
+            color: white !important;
+        }
+        
+        /* Ensure all benefit and feature icons are white */
+        .benefit-icon i, .feature-icon i {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Modern Header with Gradient -->
@@ -20,12 +81,12 @@
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h1 class="display-4 mb-2" style="font-weight: 700;">SEO Topical Cluster Analyzer</h1>
-                    <p class="lead text-info" style="opacity: 0.9;">Identify key topical clusters from your website's sitemap using AI-powered analysis</p>
+                    <p class="lead" style="opacity: 0.9; color: rgba(255, 255, 255, 0.7) !important;">Identify key topical clusters from your website's sitemap using AI-powered analysis</p>
                 </div>
                 <div class="col-md-4 text-end">
                     <div class="icon-container" style="position: relative; display: inline-block;">
-                        <i class="fas fa-sitemap fa-4x text-info" style="opacity: 0.6;"></i>
-                        <i class="fas fa-chart-pie fa-2x text-primary" style="position: absolute; bottom: 0; right: 0; opacity: 0.8;"></i>
+                        <i class="fas fa-sitemap fa-4x" style="opacity: 0.6; color: rgba(255, 255, 255, 0.8);"></i>
+                        <i class="fas fa-chart-pie fa-2x" style="position: absolute; bottom: 0; right: 0; opacity: 0.8; color: rgba(255, 255, 255, 0.8);"></i>
                     </div>
                 </div>
             </div>
@@ -39,7 +100,7 @@
                 <div class="col-lg-8">
                     <div class="card">
                         <div class="card-body">
-                            <h2 class="card-title"><i class="fas fa-info-circle text-info me-2"></i>What This Tool Does</h2>
+                            <h2 class="card-title"><i class="fas fa-info-circle me-2" style="color: rgba(255, 255, 255, 0.8);"></i>What This Tool Does</h2>
                             <p class="card-text">Our SEO Topical Cluster Analyzer uses advanced AI to examine your website's sitemap and identify the most important topical clusters for SEO optimization.</p>
                             
                             <h5 class="mt-4 text-info">Key Features:</h5>
