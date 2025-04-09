@@ -19,17 +19,35 @@ request_counter = {}
 @app.route('/')
 def index():
     """Render the main page with the sitemap URL input form."""
+    # Check if OpenAI API key is configured
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        flash('Warning: OpenAI API key is not set up. Analysis will use sample data instead.', 'warning')
+    elif api_key.startswith(('sk_test_', 'sk_live_')):
+        flash('Warning: Your OpenAI API key appears to be a Stripe key, not an OpenAI key. Please check your environment variables.', 'warning')
+    elif len(api_key) < 20:  # OpenAI keys are typically longer
+        flash('Warning: Your OpenAI API key appears to be invalid. Please check your environment variables.', 'warning')
     
-    # Inform users about the sample data mode
-    flash('This application is running in sample mode with pre-defined SEO analysis results.', 'info')
-    flash('Enter any sitemap URL to see a demonstration of the topical cluster analysis.', 'info')
+    # Display warning for deployed environment
+    if os.environ.get("REPLIT_DEPLOYMENT") == "1":
+        flash('Important: For deployment, ensure your OpenAI API key is correctly set in your project secrets.', 'info')
     
     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
     """Process the sitemap URL and analyze it for topical clusters."""
-    # No need to check for OpenAI API key as we're using mock data
+    # Check if OpenAI API key is configured and appears valid
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logger.warning("OPENAI_API_KEY environment variable is not set")
+        flash('OpenAI API key is not configured. Analysis will use sample data instead.', 'warning')
+    elif api_key.startswith(('sk_test_', 'sk_live_')):
+        logger.warning("Invalid API key format (looks like a Stripe key)")
+        flash('Your OpenAI API key appears to be a Stripe key, not an OpenAI key.', 'warning')
+    elif len(api_key) < 20:  # OpenAI keys are typically longer
+        logger.warning("API key appears too short to be valid")
+        flash('Your OpenAI API key appears to be invalid (too short).', 'warning')
     
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
@@ -97,14 +115,14 @@ def analyze():
         sitemap_stats = analyze_sitemap_structure(urls)
         logger.info(f"Found {sitemap_stats['total_urls']} URLs in total across {len(sitemap_stats['domains'])} domains")
         
-        # Identify topical clusters (now using reliable mock data)
-        logger.info("Identifying topical clusters")
+        # Use OpenAI to identify topical clusters (or fall back to mock data if needed)
+        logger.info("Identifying topical clusters with OpenAI if available")
         try:
             clusters = identify_topical_clusters(urls, sitemap_stats)
             logger.info(f"Identified {len(clusters.get('clusters', []))} topical clusters")
             
-            # Inform user about the mock data
-            flash('Using sample SEO analysis with high-quality data. Your results are ready!', 'info')
+            # Tell user their results are ready
+            flash('SEO analysis complete! Your topical cluster results are ready.', 'success')
             
         except Exception as ai_error:
             logger.error(f"Error generating clusters: {str(ai_error)}")
