@@ -19,7 +19,17 @@ request_counter = {}
 @app.route('/')
 def index():
     """Render the main page with the sitemap URL input form."""
-    # Clean, minimalist approach with no warnings - just render the template
+    # Always inform users about what they'll get
+    flash('SEO Topical Cluster Analysis: Enter a sitemap URL to analyze your website content structure', 'info')
+    
+    # Check for OpenAI API key before users try to use the tool
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key or len(api_key) < 20 or not api_key.startswith('sk-'):
+        flash('Warning: The OpenAI API key appears to be invalid. This tool ONLY uses the OpenAI API with NO mock data fallbacks.', 'warning')
+    
+    # Only using real OpenAI API - inform the user
+    flash('Enter your sitemap URL to get AI-powered SEO analysis of your content', 'info')
+    
     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
