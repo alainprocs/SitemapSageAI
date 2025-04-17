@@ -1,8 +1,14 @@
 import os
 import logging
+import time
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from sitemap_analyzer import fetch_sitemap, parse_sitemap, analyze_sitemap_structure
 from openai_client import identify_topical_clusters, test_openai_connection
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Set up logging for debugging
 logging.basicConfig(level=logging.DEBUG)
@@ -15,6 +21,10 @@ app.secret_key = os.environ.get("SESSION_SECRET", "default-secret-key-for-develo
 # Rate limiting variables
 MAX_REQUESTS_PER_HOUR = 10
 request_counter = {}
+
+# In-memory cache for results (to avoid large session cookies)
+# Structure: {"user_ip_sitemap_hash": {"clusters": data, "timestamp": time.time()}}
+results_cache = {}
 
 @app.route('/')
 def index():
@@ -39,16 +49,16 @@ def analyze():
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         logger.error("OPENAI_API_KEY environment variable is not set")
-        raise Exception("OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable.")
-    elif api_key.startswith(('sk_test_', 'sk_live_')):
-        logger.error("Invalid API key format (looks like a Stripe key)")
-        raise Exception("Your OpenAI API key appears to be a Stripe key, not an OpenAI key.")
-    elif not api_key.startswith('sk-') and not api_key.startswith('sk-pr'):
-        logger.error(f"Invalid API key format (should start with 'sk-')")
-        raise Exception("Your OpenAI API key appears to be in an invalid format. OpenAI API keys should start with 'sk-'.")
-    elif len(api_key) < 20:  # OpenAI keys are typically longer
-        logger.error("API key appears too short to be valid")
-        raise Exception("Your OpenAI API key appears to be invalid (too short).")
+        flash('Error: OpenAI API key not found. Please set OPENAI_API_KEY in your .env file.', 'error')
+        return render_template('index.html')
+    
+    # Verify the API key format (simplify to just check for 'sk-' prefix)
+    if not api_key.startswith('sk-'):
+        logger.error("Invalid OpenAI API key format")
+        flash('Error: Invalid OpenAI API key format. Key should start with sk-', 'error')
+        return render_template('index.html')
+    
+    logger.info("API key validation passed")
     
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
@@ -123,12 +133,14 @@ def analyze():
             logger.info("OpenAI API connection test successful")
         except Exception as api_test_error:
             logger.error(f"OpenAI API connection test failed: {str(api_test_error)}")
-            raise Exception(f"OpenAI API connection error: {str(api_test_error)}. Please verify your API key and connection.")
+            flash(f"OpenAI API connection error: {str(api_test_error)}. Please verify your API key and connection.", 'danger')
+            return render_template('index.html')
         
         # Get topical clusters using OpenAI API exclusively
         logger.info("Identifying topical clusters with OpenAI API (NO mock data)")
         try:
-            # Use only OpenAI API - no fallback to mock data
+            # Use the OpenAI API directly - simpler and more reliable approach
+            logger.info("Making OpenAI API call to analyze sitemap content")
             clusters = identify_topical_clusters(urls, sitemap_stats)
             logger.info(f"Identified {len(clusters.get('clusters', []))} topical clusters")
             
@@ -139,16 +151,28 @@ def analyze():
             logger.error(f"Error generating clusters: {str(ai_error)}")
             logger.error("OpenAI API error - no fallback available")
             
-            # No fallback to mock data - just show the error
-            raise Exception(f"OpenAI API error: {str(ai_error)}. Please try again later.")
+            # No fallback to mock data - just show the error and return to the index page
+            flash(f"OpenAI API error: {str(ai_error)}. Please verify your API key and try again.", 'danger')
+            return render_template('index.html')
         
         # Update rate limiting counter
         request_counter[client_ip] = request_counter.get(client_ip, 0) + 1
         
-        # Store results in session for the results page
-        session['sitemap_url'] = sitemap_url
-        session['sitemap_stats'] = sitemap_stats
-        session['clusters'] = clusters
+        # Generate a unique key for this analysis based on IP and sitemap URL
+        import hashlib
+        cache_key = hashlib.md5(f"{client_ip}:{sitemap_url}".encode()).hexdigest()
+        
+        # Store results in server-side cache instead of session cookie
+        results_cache[cache_key] = {
+            'clusters': clusters,
+            'sitemap_url': sitemap_url,
+            'sitemap_stats': sitemap_stats,
+            'analysis_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'timestamp': time.time()
+        }
+        
+        # Store only the cache key in session
+        session['results_cache_key'] = cache_key
         
         logger.info("Analysis complete, redirecting to results page")
         return redirect(url_for('results'))
@@ -169,21 +193,29 @@ def analyze():
 @app.route('/results')
 def results():
     """Display the analysis results."""
-    # Get results from session
-    sitemap_url = session.get('sitemap_url')
-    sitemap_stats = session.get('sitemap_stats')
-    clusters = session.get('clusters')
-    
-    if not sitemap_url or not sitemap_stats or not clusters:
-        flash('No analysis results found. Please submit a sitemap URL.', 'danger')
+    # Check if we have a cache key in the session
+    if 'results_cache_key' not in session:
+        flash('No analysis results found. Please analyze a sitemap first.', 'warning')
         return redirect(url_for('index'))
     
-    return render_template(
-        'results.html',
-        sitemap_url=sitemap_url,
-        sitemap_stats=sitemap_stats,
-        clusters=clusters
-    )
+    cache_key = session.get('results_cache_key')
+    cached_data = results_cache.get(cache_key)
+    
+    if not cached_data:
+        flash('Your analysis results have expired. Please analyze the sitemap again.', 'warning')
+        return redirect(url_for('index'))
+    
+    # Extract data from cache
+    clusters = cached_data.get('clusters', {})
+    sitemap_url = cached_data.get('sitemap_url', '')
+    sitemap_stats = cached_data.get('sitemap_stats', {})
+    analysis_time = cached_data.get('analysis_time', '')
+    
+    return render_template('results.html', 
+                           clusters=clusters, 
+                           sitemap_url=sitemap_url,
+                           sitemap_stats=sitemap_stats,
+                           analysis_time=analysis_time)
 
 @app.errorhandler(404)
 def page_not_found(e):
