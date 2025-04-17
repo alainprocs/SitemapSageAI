@@ -84,180 +84,138 @@ def test_openai_connection():
 
 def identify_topical_clusters(urls, sitemap_stats):
     """
-    Analyze sitemap URLs to identify topical clusters using OpenAI.
-    
+    Analyze sitemap URLs to identify topical clusters using OpenAI, supporting batching and model selection for large sitemaps.
     Args:
         urls (list): List of URL dictionaries
         sitemap_stats (dict): Statistics about the sitemap structure
-        
     Returns:
-        dict: Top 5 topical clusters with counts and examples
+        dict: Aggregated topical clusters across all URLs
     """
-    logger.info("Using OpenAI API for topical cluster analysis")
-    
-    # Set a longer timeout for the OpenAI client
+    import difflib
+    import re
+    logger.info("Using OpenAI API for topical cluster analysis with batching support")
     global client
-    # Reinitialize the client with a longer timeout for this specific operation
     if client:
         try:
-            client.timeout = 180.0  # 3 minutes timeout
-            logger.info(f"Set OpenAI client timeout to 180 seconds for large sitemap processing")
+            client.timeout = 180.0
+            logger.info("Set OpenAI client timeout to 180 seconds for large sitemap processing")
         except Exception as e:
             logger.warning(f"Could not set timeout on existing client: {str(e)}")
-    
-    try:
-        # Prepare the URL list for analysis
-        # Limit to 100 URLs to avoid token limits
-        url_list = [url.get('loc', '') for url in urls[:100] if 'loc' in url]
-        
-        if not url_list:
-            raise ValueError("No valid URLs found in sitemap")
-        
-        # Create a more focused prompt that instructs GPT to analyze the URLs and identify topical clusters
+
+    # Try to use gpt-4o-mini as preferred model
+    models_to_try = ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"]
+    # Use the first model in the list (assuming all are available)
+    model = models_to_try[0]
+    logger.info(f"Using {model} for analysis")
+
+    # Larger batches for faster processing
+    batch_size = 100  # Use 100 URLs per batch for all models
+    url_list = [url.get('loc', '') for url in urls if 'loc' in url]
+    total_urls = len(url_list)
+    if not url_list:
+        raise ValueError("No valid URLs found in sitemap")
+    logger.info(f"Processing {total_urls} URLs in batches of {batch_size} using model {model}")
+
+    # Dynamic number of clusters based on total_urls
+    n_clusters = min(15, max(5, round(total_urls / 30)))
+    logger.info(f"Targeting {n_clusters} topical clusters based on total URL count")
+
+    # Helper: merge clusters by fuzzy title match
+    def merge_clusters(agg, new_clusters):
+        for new in new_clusters:
+            matched = None
+            for agg_cl in agg:
+                ratio = difflib.SequenceMatcher(None, agg_cl['title'].lower(), new['title'].lower()).ratio()
+                if ratio > 0.8:
+                    matched = agg_cl
+                    break
+            if matched:
+                matched['count'] += new.get('count', 0)
+                matched['examples'] = list(set(matched['examples'] + new.get('examples', [])))[:5]
+                matched['article_ideas'] = (matched.get('article_ideas', []) + new.get('article_ideas', []))[:10]
+            else:
+                agg.append(new)
+        return agg
+
+    # Batch processing
+    all_clusters = []
+    for i in range(0, total_urls, batch_size):
+        batch_urls = url_list[i:i+batch_size]
+        logger.info(f"Processing batch {i//batch_size+1}: URLs {i+1}-{i+len(batch_urls)}")
         prompt = f"""
-        I need a quick analysis of this website sitemap to identify the top 5 SEO topical clusters.
-        
-        Here are some details about the sitemap:
-        - Total URLs: {sitemap_stats['total_urls']}
-        - Main domain: {sitemap_stats['main_domain']}
-        - Average path depth: {sitemap_stats['avg_depth']:.2f}
-        
-        Here's a sample of URLs from the sitemap (up to 40):
-        {json.dumps(url_list[:40], indent=2)}
-        
-        Based on SEO best practices and content organization:
-        1. Identify the top 5 topical clusters present in this sitemap
-        2. Count the approximate number of URLs that belong to each cluster
-        3. List 3 example URLs for each cluster
-        4. Provide a brief description of each cluster and its SEO significance
-        5. Suggest a descriptive title for each cluster
-        6. Suggest 5 engaging blog article ideas for each cluster that would be ideal for expanding the content in that topic area. Each suggestion should include a compelling headline and a brief description of what the article would cover.
-        
-        Respond with JSON in the following format:
-        {{
-            "clusters": [
-                {{
-                    "title": "Cluster title",
-                    "description": "Brief description of this topical cluster",
-                    "count": "Approximate number of URLs in this cluster",
-                    "examples": ["example-url-1", "example-url-2", "example-url-3"],
-                    "seo_significance": "Why this cluster is significant for SEO",
-                    "article_ideas": [
-                        {{
-                            "headline": "Compelling article headline",
-                            "description": "Brief description of the article content"
-                        }},
-                        // 4 more article ideas
-                    ]
-                }},
-                // more clusters
-            ]
-        }}
-        
-        Only include the 5 most significant clusters ordered by importance. Ensure the article ideas are specific, relevant to the cluster topic, and designed to address potential content gaps or trending topics that would enhance SEO performance.
-        """
-        
-        # Call the OpenAI API with retry logic
+        Analyze the following sitemap URLs and identify up to {n_clusters} of the most significant SEO topical clusters.\n\nSitemap details:\n- Total URLs: {total_urls}\n- Main domain: {sitemap_stats['main_domain']}\n- Average path depth: {sitemap_stats['avg_depth']:.2f}\n\nURLs:\n{json.dumps(batch_urls, indent=2)}\n\nInstructions:\n1. Identify up to {n_clusters} of the most significant topical clusters in this batch.\n2. For each cluster, provide title, description, count, 3 example URLs, SEO significance, and 5 article ideas (headline + description).\n3. Respond ONLY with valid JSON as: {{\"clusters\": [{{...}}]}}.\n4. Do NOT include any explanations or commentary.\n5. If you cannot fit all clusters, prioritize the most significant and cut off at the limit.\n"""
+        # Retry logic
+
+
         max_retries = 3
-        retry_delay = 5  # seconds
-        
         for attempt in range(max_retries):
             try:
-                # Call the OpenAI API with a longer timeout
-                logger.info(f"Calling OpenAI API for analysis (attempt {attempt+1}/{max_retries})")
-                
-                # Use a simpler model for faster processing
-                model = "gpt-3.5-turbo"
-                logger.info(f"Using model: {model} for faster processing")
-                
                 response = client.chat.completions.create(
                     model=model,
                     messages=[
-                        {"role": "system", "content": "You are an SEO expert analyzing website sitemaps to identify topical clusters."},
+                        {"role": "system", "content": "You are an SEO expert analyzing website sitemaps to identify topical clusters. Respond ONLY with valid JSON, no explanations or commentary."},
                         {"role": "user", "content": prompt}
                     ],
                     response_format={"type": "json_object"},
                     temperature=0.5,
                     max_tokens=2000
                 )
-                
-                # Extract and parse the JSON response
                 content = response.choices[0].message.content
                 clusters_data = json.loads(content)
-                
-                # Log success
-                logger.info("Successfully received and parsed OpenAI response")
-                
-                # Ensure we have the correct structure
-                if 'clusters' not in clusters_data or not isinstance(clusters_data['clusters'], list):
-                    logger.warning("Invalid response structure from OpenAI. Missing 'clusters' list.")
-                    clusters_data = {'clusters': []}
-                
-                # Process each cluster to standardize the format
-                for cluster in clusters_data['clusters']:
-                    # Ensure each cluster has all required fields
+                clusters = clusters_data.get('clusters', [])
+                # Standardize/clean up clusters
+                for cluster in clusters:
+                    # Title
                     if 'title' not in cluster:
                         cluster['title'] = 'Unnamed Cluster'
-                    
+                    # Count
                     if 'count' not in cluster:
                         cluster['count'] = 0
-                    
-                    # Convert count to a number if it's a string
                     if isinstance(cluster['count'], str):
-                        try:
-                            # Extract numbers from strings like "~120" or "approximately 50"
-                            import re
-                            number_match = re.search(r'\d+', cluster['count'])
-                            if number_match:
-                                cluster['count'] = int(number_match.group())
-                            else:
-                                cluster['count'] = 0
-                        except:
+                        number_match = re.search(r'\d+', cluster['count'])
+                        if number_match:
+                            cluster['count'] = int(number_match.group())
+                        else:
                             cluster['count'] = 0
-                    
-                    # Ensure examples is a list
+                    # Examples
                     if 'examples' not in cluster or not isinstance(cluster['examples'], list):
                         cluster['examples'] = []
-                    
-                    # Ensure description and seo_significance exist
+                    # Description/SEO significance
                     if 'description' not in cluster:
                         cluster['description'] = 'No description provided'
-                    
                     if 'seo_significance' not in cluster:
                         cluster['seo_significance'] = 'No SEO significance provided'
-                    
-                    # Ensure article_ideas exists and is properly formatted
+                    # Article ideas
                     if 'article_ideas' not in cluster or not isinstance(cluster['article_ideas'], list):
                         cluster['article_ideas'] = [
-                            {
-                                "headline": f"Article idea for {cluster['title']}",
-                                "description": "Suggested content based on this topical cluster"
-                            }
-                        ] * 5  # Create 5 placeholder article ideas
-                
-                logger.info(f"Successfully processed {len(clusters_data['clusters'])} topical clusters")
-                
-                # Return the processed clusters data
-                return clusters_data
-                
+                            {"headline": f"Article idea for {cluster['title']}", "description": "Suggested content based on this topical cluster"}
+                        ] * 5
+                all_clusters = merge_clusters(all_clusters, clusters)
+                logger.info(f"Batch {i//batch_size+1}: Processed {len(clusters)} clusters, total aggregated: {len(all_clusters)}")
+                break  # Success, no retry needed
             except json.JSONDecodeError as json_error:
-                logger.error(f"JSON parsing error: {str(json_error)}")
+                logger.error(f"JSON parsing error in batch {i//batch_size+1}: {str(json_error)}")
+                # Retry with a smaller batch if possible
+                if len(batch_urls) > 5:
+                    new_batch_size = max(5, len(batch_urls) // 2)
+                    logger.info(f"Retrying batch {i//batch_size+1} with smaller batch size: {new_batch_size}")
+                    batch_urls = batch_urls[:new_batch_size]
+                    continue
                 if attempt < max_retries - 1:
-                    logger.info(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
+                    logger.info(f"Retrying batch {i//batch_size+1} in 5 seconds...")
+                    time.sleep(5)
                 else:
-                    logger.error("Maximum retries reached for JSON parsing error")
+                    logger.error("Maximum retries reached for JSON parsing error in batch")
                     raise Exception(f"Failed to parse OpenAI response as JSON: {str(json_error)}")
-                    
             except Exception as api_error:
-                logger.error(f"OpenAI API error: {str(api_error)}")
+                logger.error(f"OpenAI API error in batch {i//batch_size+1}: {str(api_error)}")
                 if attempt < max_retries - 1:
-                    logger.info(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
+                    logger.info(f"Retrying batch {i//batch_size+1} in 5 seconds...")
+                    time.sleep(5)
                 else:
-                    logger.error("Maximum retries reached for API error")
+                    logger.error("Maximum retries reached for API error in batch")
                     raise Exception(f"OpenAI API error after {max_retries} attempts: {str(api_error)}")
-    
-    except Exception as e:
-        logger.error(f"Error in identify_topical_clusters: {str(e)}")
-        raise Exception(f"Failed to identify topical clusters: {str(e)}")
+    # Sort clusters by count and return the top n_clusters
+    all_clusters.sort(key=lambda c: c.get('count', 0), reverse=True)
+    logger.info(f"Returning {min(n_clusters, len(all_clusters))} clusters (topical aggregation complete)")
+    return {"clusters": all_clusters[:n_clusters]}

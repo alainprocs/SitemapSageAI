@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyzing Sitemap...</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        .loading-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .loading-message {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, #8B5CF6, #22D3EE, #F472B6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .progress-bar {
+            width: 80%;
+            height: 14px;
+            margin: 2rem auto 0 auto;
+            border-radius: 8px;
+            background: #22223B;
+            overflow: hidden;
+            box-shadow: 0 1px 12px 0 #8B5CF644;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #8B5CF6, #22D3EE, #F472B6);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="modern-ui">
+    <div class="hero-section-container">
+        <div class="hero-bg-gradient"></div>
+        <div class="retro-grid">
+            <div class="grid-inner"><div class="grid-lines"></div></div>
+            <div class="grid-fade"></div>
+        </div>
+        <div class="hero-content" style="align-items: center; justify-content: center; min-height: 70vh;">
+            <div class="loading-emoji" id="loading-emoji">🌐</div>
+            <div class="loading-message" id="loading-message">Parsing your sitemap...</div>
+            <div class="progress-bar"><div class="progress-bar-inner" id="progress-bar-inner"></div></div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+</body>
+</html>

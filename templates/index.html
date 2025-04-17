@@ -63,7 +63,7 @@
                     </p>
                 </div>
                 
-                <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post" class="hero-form">
+                <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post" class="hero-form" autocomplete="off">
                     <div class="input-container">
                         <i data-lucide="globe" class="input-icon"></i>
                         <input 
@@ -101,12 +101,6 @@
         // Initialize Lucide icons
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            
-            // Show loading indicator when form is submitted
-            document.getElementById('sitemap-form').addEventListener('submit', function() {
-                document.getElementById('loading-indicator').classList.remove('hidden');
-                document.getElementById('submit-button').disabled = true;
-            });
         });
     </script>
 </body>

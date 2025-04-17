@@ -59,6 +59,12 @@
                 
                 <p style="margin-bottom: 1rem; max-width: 600px; margin-left: auto; margin-right: auto; color: var(--muted-foreground);">{{ error }}</p>
                 
+                {% if error_details %}
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.2); border-radius: var(--radius); max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <p style="margin: 0; color: #f87171;">{{ error_details }}</p>
+                </div>
+                {% endif %}
+                
                 {% if 'openai' in error|lower or 'api' in error|lower %}
                 <div style="margin-bottom: 2rem; padding: 1rem; border-radius: var(--radius); background: linear-gradient(to bottom right, rgba(255, 0, 0, 0.05), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(255, 0, 0, 0.1);">
                     <h3 style="margin-bottom: 0.5rem; font-size: 1rem; color: #ff4e4e;">OpenAI API Issue Detected</h3>

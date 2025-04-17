@@ -2,7 +2,9 @@ import os
 import logging
 import time
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+import uuid
+import threading
 from sitemap_analyzer import fetch_sitemap, parse_sitemap, analyze_sitemap_structure
 from openai_client import identify_topical_clusters, test_openai_connection
 from dotenv import load_dotenv
@@ -14,6 +16,15 @@ load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# File handler for error logs (ensure directory exists)
+import os
+log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'debug.log')
+file_handler = logging.FileHandler(log_file, mode='a')
+file_handler.setLevel(logging.DEBUG)  # Log all levels
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(file_handler)
+logger.info(f"Logging to {log_file}")
+
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default-secret-key-for-development")
@@ -22,9 +33,8 @@ app.secret_key = os.environ.get("SESSION_SECRET", "default-secret-key-for-develo
 MAX_REQUESTS_PER_HOUR = 10
 request_counter = {}
 
-# In-memory cache for results (to avoid large session cookies)
-# Structure: {"user_ip_sitemap_hash": {"clusters": data, "timestamp": time.time()}}
-results_cache = {}
+# In-memory job store: {job_id: {status: 'pending'|'done'|'error', result:..., error:...}}
+jobs = {}
 
 @app.route('/')
 def index():
@@ -44,9 +54,113 @@ def index():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    """Process the sitemap URL and analyze it for topical clusters."""
-    # Check if OpenAI API key is configured and appears valid
-    api_key = os.environ.get("OPENAI_API_KEY")
+    # Generate a unique job_id
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {'status': 'pending', 'result': None, 'error': None}
+    sitemap_url = request.form.get('sitemap_url', '').strip()
+    def run_analysis():
+        try:
+            # Normalize URL - add https:// if missing
+            normalized_url = sitemap_url
+            if not normalized_url.startswith(('http://', 'https://')):
+                normalized_url = 'https://' + normalized_url
+                logger.info(f"Added https:// prefix, URL is now: {normalized_url}")
+            
+            logger.info(f"Starting analysis for job {job_id} with URL {normalized_url}")
+            try:
+                xml_content = fetch_sitemap(normalized_url)
+                logger.info(f"Fetched sitemap: {len(xml_content)} bytes")
+            except Exception as e:
+                logger.error(f"Error fetching sitemap: {str(e)}", exc_info=True)
+                jobs[job_id]['error'] = f"Error fetching sitemap: {str(e)}"
+                jobs[job_id]['status'] = 'error'
+                return
+
+            try:
+                urls = parse_sitemap(xml_content)
+                logger.info(f"Parsed sitemap: {len(urls)} URLs found")
+            except Exception as e:
+                logger.error(f"Error parsing sitemap: {str(e)}", exc_info=True)
+                jobs[job_id]['error'] = f"Error parsing sitemap: {str(e)}"
+                jobs[job_id]['status'] = 'error'
+                return
+
+            try:
+                sitemap_stats = analyze_sitemap_structure(urls)
+                logger.info(f"Analyzed sitemap structure: {sitemap_stats['total_urls']} URLs")
+            except Exception as e:
+                logger.error(f"Error analyzing sitemap structure: {str(e)}", exc_info=True)
+                jobs[job_id]['error'] = f"Error analyzing sitemap structure: {str(e)}"
+                jobs[job_id]['status'] = 'error'
+                return
+
+            try:
+                clusters = identify_topical_clusters(urls, sitemap_stats)
+                logger.info(f"Identified clusters: {len(clusters.get('clusters', []))} clusters found")
+            except Exception as e:
+                logger.error(f"Error identifying clusters: {str(e)}", exc_info=True)
+                jobs[job_id]['error'] = f"Error identifying clusters: {str(e)}"
+                jobs[job_id]['status'] = 'error'
+                return
+
+            # Store the results
+            jobs[job_id]['result'] = {'clusters': clusters, 'sitemap_url': sitemap_url, 'sitemap_stats': sitemap_stats}
+            jobs[job_id]['status'] = 'done'
+            logger.info(f"Job {job_id} completed successfully")
+        except Exception as e:
+            logger.error(f"Unexpected error in background job {job_id}: {str(e)}", exc_info=True)
+            jobs[job_id]['error'] = f"Unexpected error: {str(e)}"
+            jobs[job_id]['status'] = 'error'
+    threading.Thread(target=run_analysis).start()
+    return redirect(url_for('loading', job_id=job_id))
+
+@app.route('/loading')
+def loading():
+    job_id = request.args.get('job_id')
+    return render_template('loading.html', job_id=job_id)
+
+@app.route('/analyze_status')
+def analyze_status():
+    job_id = request.args.get('job_id')
+    job = jobs.get(job_id)
+    if not job:
+        return jsonify({'status': 'not_found'})
+    return jsonify({'status': job['status']})
+
+@app.route('/results')
+def results():
+    job_id = request.args.get('job_id')
+    if not job_id:
+        logger.error("No job_id provided to /results")
+        return render_template('error.html', error_msg='No job ID provided.', 
+                            error_details="Please return to the home page and try again.")
+    
+    job = jobs.get(job_id)
+    if not job:
+        logger.error(f"Job not found: {job_id}")
+        return render_template('error.html', error_msg='Job not found.', 
+                            error_details=f"The job ID {job_id} was not found in our system. It may have expired or been removed.")
+    
+    if job['status'] == 'error':
+        error = job['error']
+        logger.error(f"Job error: {job_id} - {error}")
+        return render_template('error.html', error_msg='Analysis Error', 
+                            error_details=error)
+    
+    if job['status'] != 'done':
+        logger.info(f"Job not ready, redirecting to loading: {job_id} - {job['status']}")
+        return redirect(url_for('loading', job_id=job_id))
+    
+    try:
+        clusters = job['result']['clusters']
+        sitemap_url = job['result']['sitemap_url']
+        sitemap_stats = job['result']['sitemap_stats']
+        logger.info(f"Rendering results for job {job_id}: {len(clusters.get('clusters', []))} clusters")
+        return render_template('results.html', clusters=clusters, sitemap_url=sitemap_url, sitemap_stats=sitemap_stats)
+    except Exception as e:
+        logger.error(f"Error rendering results for job {job_id}: {str(e)}", exc_info=True)
+        return render_template('error.html', error_msg='Error Rendering Results', 
+                            error_details=f"An error occurred while rendering the results: {str(e)}")
     if not api_key:
         logger.error("OPENAI_API_KEY environment variable is not set")
         flash('Error: OpenAI API key not found. Please set OPENAI_API_KEY in your .env file.', 'error')
@@ -59,6 +173,37 @@ def analyze():
         return render_template('index.html')
     
     logger.info("API key validation passed")
+
+    # Show loading screen while processing
+    if request.method == 'POST':
+        sitemap_url = request.form.get('sitemap_url')
+        if not sitemap_url:
+            flash('Please enter a sitemap URL.', 'error')
+            return render_template('index.html')
+        # Render the loading screen and continue processing in the background
+        # (for demo: process synchronously, but show loading page)
+        # In production, use background jobs/celery for async
+        from flask import copy_current_request_context
+        import threading
+        
+        @copy_current_request_context
+        def process_and_redirect():
+            try:
+                xml_content = fetch_sitemap(sitemap_url)
+                urls = parse_sitemap(xml_content)
+                sitemap_stats = analyze_sitemap_structure(urls)
+                clusters = identify_topical_clusters(urls, sitemap_stats)
+                # Store results in session or cache
+                session['clusters'] = clusters
+                session['sitemap_url'] = sitemap_url
+                session['sitemap_stats'] = sitemap_stats
+            except Exception as e:
+                logger.error(f"Error during analysis: {e}")
+                session['error'] = str(e)
+
+        t = threading.Thread(target=process_and_redirect)
+        t.start()
+        return render_template('loading.html')
     
     sitemap_url = request.form.get('sitemap_url', '').strip()
     
@@ -190,21 +335,7 @@ def analyze():
                                "If the problem persists, the sitemap format may be unsupported"
                            ])
 
-@app.route('/results')
-def results():
-    """Display the analysis results."""
-    # Check if we have a cache key in the session
-    if 'results_cache_key' not in session:
-        flash('No analysis results found. Please analyze a sitemap first.', 'warning')
-        return redirect(url_for('index'))
-    
-    cache_key = session.get('results_cache_key')
-    cached_data = results_cache.get(cache_key)
-    
-    if not cached_data:
-        flash('Your analysis results have expired. Please analyze the sitemap again.', 'warning')
-        return redirect(url_for('index'))
-    
+
     # Extract data from cache
     clusters = cached_data.get('clusters', {})
     sitemap_url = cached_data.get('sitemap_url', '')
@@ -248,4 +379,11 @@ def server_error(e):
                           suggestions=suggestions), 500
 
 if __name__ == '__main__':
+    # Delete any existing log file to start fresh
+    try:
+        os.remove(log_file)
+        logger.info(f"Removed existing log file: {log_file}")
+    except OSError:
+        pass
+    logger.info("Starting Flask application")
     app.run(host='0.0.0.0', port=5000, debug=True)
