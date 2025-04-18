@@ -1,15 +1,21 @@
 const messages = [
-    { text: 'Parsing your sitemap... 🌐', emoji: '🌐', progress: 15 },
-    { text: 'Mapping your website structure... 🗺️', emoji: '🗺️', progress: 30 },
-    { text: 'Clustering similar topics... 🧩', emoji: '🧩', progress: 50 },
-    { text: 'Analyzing SEO signals... 📊', emoji: '📊', progress: 65 },
-    { text: 'Generating article ideas... 💡', emoji: '💡', progress: 80 },
+    { text: 'Validating sitemap URL... 🔗', emoji: '🔗', progress: 10 },
+    { text: 'Fetching sitemap index... 🗂️', emoji: '🗂️', progress: 20 },
+    { text: 'Downloading sitemap data... 📥', emoji: '📥', progress: 25 },
+    { text: 'Parsing your sitemap... 🌐', emoji: '🌐', progress: 30 },
+    { text: 'Extracting URLs from sitemap... 🔍', emoji: '🔍', progress: 35 },
+    { text: 'Mapping website structure... 🗺️', emoji: '🗺️', progress: 45 },
+    { text: 'Checking robots.txt rules... 🤖', emoji: '🤖', progress: 55 },
+    { text: 'Clustering similar topics... 🧩', emoji: '🧩', progress: 60 },
+    { text: 'Analyzing SEO signals... 📊', emoji: '📊', progress: 70 },
+    { text: 'Reviewing meta descriptions... 📝', emoji: '📝', progress: 75 },
+    { text: 'Generating article ideas... 💡', emoji: '💡', progress: 85 },
     { text: 'Almost done! Preparing results... 🚀', emoji: '🚀', progress: 95 }
 ];
 
 let msgIdx = 0;
 let progress = 0;
-let targetProgress = 15; // First milestone
+let targetProgress = 10; // First milestone
 const progressMax = 98; // Don't fill to 100% until redirect
 const animationSpeed = 0.3; // Slower animation speed
 
