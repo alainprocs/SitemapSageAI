@@ -143,7 +143,7 @@ def identify_topical_clusters(urls, sitemap_stats):
         batch_urls = url_list[i:i+batch_size]
         logger.info(f"Processing batch {i//batch_size+1}: URLs {i+1}-{i+len(batch_urls)}")
         prompt = f"""
-        Analyze the following sitemap URLs and identify up to {n_clusters} of the most significant SEO topical clusters.\n\nSitemap details:\n- Total URLs: {total_urls}\n- Main domain: {sitemap_stats['main_domain']}\n- Average path depth: {sitemap_stats['avg_depth']:.2f}\n\nURLs:\n{json.dumps(batch_urls, indent=2)}\n\nInstructions:\n1. Identify up to {n_clusters} of the most significant topical clusters in this batch.\n2. For each cluster, provide title, description, count, 3 example URLs, SEO significance, and 5 article ideas (headline + description).\n3. Respond ONLY with valid JSON as: {{\"clusters\": [{{...}}]}}.\n4. Do NOT include any explanations or commentary.\n5. If you cannot fit all clusters, prioritize the most significant and cut off at the limit.\n"""
+        Analyze the following sitemap URLs and identify up to {n_clusters} of the most significant SEO topical clusters.\n\nSitemap details:\n- Total URLs: {total_urls}\n- Main domain: {sitemap_stats['main_domain']}\n- Average path depth: {sitemap_stats['avg_depth']:.2f}\n\nURLs:\n{json.dumps(batch_urls, indent=2)}\n\nInstructions:\n1. Identify up to {n_clusters} of the most significant topical clusters in this batch.\n2. For each cluster, include exactly these JSON fields: "title" (string), "description" (string), "count" (integer), "examples" (array of 3 example sitemap URLs as strings), "seo_significance" (string), and "article_ideas" (array of 5 objects each with "headline" and "description").\n3. Respond ONLY with valid JSON matching schema: {{"clusters": [/* array of cluster objects */]}}.\n4. Do NOT include any additional keys, explanations, or commentary.\n5. If you cannot fit all clusters, prioritize the most significant and include only up to {n_clusters} clusters.\n"""
         # Retry logic
 
 
@@ -177,9 +177,22 @@ def identify_topical_clusters(urls, sitemap_stats):
                             cluster['count'] = int(number_match.group())
                         else:
                             cluster['count'] = 0
-                    # Examples
-                    if 'examples' not in cluster or not isinstance(cluster['examples'], list):
-                        cluster['examples'] = []
+                    # Extract example URLs or fallback to sitemap URLs
+                    raw_examples = []
+                    for key, val in cluster.items():
+                        if key.lower().startswith('example') and isinstance(val, list):
+                            for item in val:
+                                if isinstance(item, str):
+                                    raw_examples.append(item)
+                                elif isinstance(item, dict):
+                                    url = item.get('url') or item.get('loc')
+                                    if isinstance(url, str):
+                                        raw_examples.append(url)
+                            break
+                    # Use API examples if available, otherwise first 3 sitemap URLs
+                    choices = raw_examples if raw_examples else url_list[:3]
+                    # Deduplicate and limit to 3
+                    cluster['examples'] = list(dict.fromkeys(choices))[:3]
                     # Description/SEO significance
                     if 'description' not in cluster:
                         cluster['description'] = 'No description provided'

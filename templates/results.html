@@ -122,12 +122,9 @@
                     Example URLs
                 </h4>
                 {% for example in cluster.examples %}
-                <div class="example-url" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(139, 92, 246, 0.1);">
-                    <span>{{ example }}</span>
-                    <button class="copy-btn" data-copy="{{ example }}">
-                        <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </div>
+                <a href="{{ example }}" target="_blank" class="example-url" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(139, 92, 246, 0.1); display: block; padding: 0.5rem; margin-bottom: 0.5rem; color: inherit; text-decoration: none;">
+                    {{ example }}
+                </a>
                 {% endfor %}
                 
                 <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #8B5CF6;">
@@ -171,22 +168,6 @@
         // Initialize Lucide icons
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            
-            // Add copy functionality
-            document.querySelectorAll('.copy-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    const text = button.getAttribute('data-copy');
-                    navigator.clipboard.writeText(text).then(() => {
-                        const icon = button.querySelector('i');
-                        // Temporarily change icon to check
-                        const originalHTML = icon.innerHTML;
-                        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                        setTimeout(() => {
-                            icon.innerHTML = originalHTML;
-                        }, 2000);
-                    });
-                });
-            });
         });
     </script>
     

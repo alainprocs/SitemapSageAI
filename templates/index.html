@@ -48,21 +48,6 @@
             
             <!-- CTA Section with form -->
             <div class="cta-container">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert {{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                
-                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: var(--radius); background: linear-gradient(to right, rgba(139, 92, 246, 0.05), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(139, 92, 246, 0.1);">
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--muted-foreground); display: flex; align-items: center;">
-                        <i data-lucide="cpu" style="width: 16px; height: 16px; margin-right: 0.5rem; color: #8B5CF6;"></i>
-                        This tool uses <strong>exclusively</strong> the OpenAI API for analysis with no mock data fallbacks.
-                    </p>
-                </div>
-                
                 <form id="sitemap-form" action="{{ url_for('analyze') }}" method="post" class="hero-form" autocomplete="off">
                     <div class="input-container">
                         <i data-lucide="globe" class="input-icon"></i>
